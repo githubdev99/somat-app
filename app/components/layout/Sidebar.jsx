@@ -16,7 +16,8 @@ import classNames from "classnames";
 import { Dialog, Transition } from "@headlessui/react";
 
 export default function Sidebar(props) {
-  const { sidebarOpen, setSidebarOpen } = props;
+  const { sidebarOpen, setSidebarOpen, openTaskDetail, setOpenTaskDetail } =
+    props;
 
   return (
     <>
@@ -65,7 +66,7 @@ export default function Sidebar(props) {
 }
 
 function SidebarWrapper(props) {
-  const { lists, setSidebarOpen } = props;
+  const { lists, setSidebarOpen, setOpenTaskDetail } = props;
 
   const [isOpenCollapsible, setIsOpenCollapsible] = useState(false);
   const [clickedNavId, setClickedNavId] = useState("");
@@ -229,7 +230,10 @@ function SidebarWrapper(props) {
               <div className="inline-block cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141] hover:text-white active:bg-slate-500">
                 <HiCog size={18} />
               </div>
-              <div className="inline-block cursor-pointer rounded-full bg-[#232323] px-4 py-1 text-white transition duration-200 ease-in hover:bg-[#404040] active:bg-slate-500">
+              <div
+                className="inline-block cursor-pointer rounded-full bg-[#232323] px-4 py-1 text-white transition duration-200 ease-in hover:bg-[#404040] active:bg-slate-500"
+                onClick={() => setOpenTaskDetail(true)}
+              >
                 <MdOutlineAddBox size={18} />
               </div>
               <div className="inline-block cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141] hover:text-white active:bg-slate-500">

@@ -13,7 +13,7 @@ export default function Button(props) {
   } = props;
 
   const classes = classNames(
-    `cursor-pointer rounded-lg px-2 py-1 text-sm font-normal shadow-sm transition duration-200 ease-in flex items-center justify-center gap-3 active:opacity-80 ${className}`,
+    `cursor-pointer rounded-lg px-2 py-1 text-sm font-normal shadow-sm transition duration-200 ease-in flex items-center justify-center gap-2 active:opacity-80 focus:outline-none ${className}`,
     {
       "bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white":
         color === "primary",

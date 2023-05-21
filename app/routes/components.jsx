@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { Global, Layout } from "~/components";
 
 export const meta = () => [{ title: "The Components" }];
 
 export default function Components() {
+  const [openTaskDetail, setOpenTaskDetail] = useState(false);
+
   return (
     <>
       <Layout.Container>
@@ -19,8 +22,13 @@ export default function Components() {
               name: "papertiger",
             },
           ]}
+          openTaskDetail={openTaskDetail}
+          setOpenTaskDetail={setOpenTaskDetail}
         />
-        <Layout.Content />
+        <Layout.Content
+          openTaskDetail={openTaskDetail}
+          setOpenTaskDetail={setOpenTaskDetail}
+        />
       </Layout.Container>
     </>
   );

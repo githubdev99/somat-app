@@ -1,40 +1,49 @@
 :root {
-    --scrollbar-color: rgba(255, 255, 255, 0.2);
-  }
-  
-  /* Reset Scrollbar */
-  #main-app *::-webkit-scrollbar,
-  #main-app *::-webkit-scrollbar-track,
-  #main-app *::-webkit-scrollbar-thumb {
-    all: unset;
-  }
-  
-  /* Firefox */
-  #main-app *:hover {
-    scrollbar-width: thin;
-    scrollbar-color: var(--scrollbar-color) var(--primary);
-  }
-  
-  /* Chrome, Edge, and Safari */
-  #main-app *:hover::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  
-  #main-app *:hover::-webkit-scrollbar-track {
-    background: transparent;
-    border-radius: 5px;
-  }
-  
-  #main-app *:hover::-webkit-scrollbar-thumb {
-    background-color: var(--scrollbar-color);
-    border-radius: 9999px;
-  }
-  
-  /* Sidebar */
-  .c-list-icon > svg {
-    width: 16px;
-    height: 16px;
-    fill: currentColor;
-  }
-  
+  --scrollbar-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Reset Scrollbar */
+*::-webkit-scrollbar,
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-thumb {
+  all: unset;
+}
+
+/* Firefox */
+*:hover {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-color) var(--primary);
+}
+
+/* Chrome, Edge, and Safari */
+*:hover::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*:hover::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 5px;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-color);
+  border-radius: 9999px;
+}
+
+/* Sidebar */
+.c-list-icon > svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.c-chat-history p:not(.c-chat-history p:last-child),
+.c-chat-history ul:not(.c-chat-history ul:last-child) {
+  margin-bottom: 12px;
+}
+
+.c-chat-history ul {
+  list-style: outside;
+  margin-left: 22px;
+}

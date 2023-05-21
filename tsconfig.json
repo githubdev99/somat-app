@@ -1,6 +1,17 @@
 {
   "exclude": ["./cypress", "./cypress.config.ts"],
-  "include": ["remix.env.d.ts", "**/*.ts", "**/*.tsx", "app/lib/animation.js", "app/components/global/Dropdown.jsx", "app/components/global/Button.jsx", "app/components/layout/Sidebar.jsx", "app/components/layout/Content.jsx", "app/components/layout/Container.jsx", "app/components/index.js"],
+  "include": [
+    "remix.env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "app/lib/animation.js",
+    "app/components/global/Dropdown.jsx",
+    "app/components/global/Button.jsx",
+    "app/components/layout/Sidebar.jsx",
+    "app/components/layout/Content.jsx",
+    "app/components/layout/Container.jsx",
+    "app/components/index.js"
+  ],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2019"],
     "types": ["vitest/globals"],
