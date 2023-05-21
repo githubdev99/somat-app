@@ -3,7 +3,7 @@ import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { BsThreeDots, BsChat } from "react-icons/bs";
 import { FaRegBellSlash } from "react-icons/fa";
-import { IoNewspaperOutline } from "react-icons/io5";
+import { IoNewspaperOutline, IoSend } from "react-icons/io5";
 
 export default function SlideOverDetail({ open, setOpen }) {
   return (
@@ -107,8 +107,8 @@ export default function SlideOverDetail({ open, setOpen }) {
                         <div className="px-5">
                           <table border={0} className="w-full align-middle">
                             <tr>
-                              <td className="w-[120px]">Status</td>
-                              <td>
+                              <td className="w-[120px] h-[31px]">Status</td>
+                              <td className="w-[203px]">
                                 <Global.Dropdown
                                   items={[
                                     {
@@ -192,10 +192,16 @@ export default function SlideOverDetail({ open, setOpen }) {
                                   />
                                 </Global.Dropdown>
                               </td>
+                              <td className="w-[120px] h-[31px] pl-2">Created At</td>
+                              <td className="text-[#EAEAEA]">
+                                <div className="min-h-[25px] w-full px-3 py-0.5">
+                                  <span className="px-1">Fri, May 19, 2023</span>
+                                </div>
+                              </td>
                             </tr>
                             <tr>
-                              <td className="w-[120px]">Assignees</td>
-                              <td>
+                              <td className="w-[120px] h-[31px]">Assignees</td>
+                              <td className="w-[203px]">
                                 <Global.Dropdown
                                   items={[
                                     {
@@ -216,9 +222,37 @@ export default function SlideOverDetail({ open, setOpen }) {
                                   <span className="px-1">Devan</span>
                                 </Global.Dropdown>
                               </td>
+                              <td className="w-[120px] h-[31px] pl-2">Due Date</td>
+                              <td className="text-[#EAEAEA]">
+                                <div className="min-h-[25px] w-full px-3 py-0.5">
+                                  <span className="px-1">Fri, May 19, 2023</span>
+                                </div>
+                              </td>
                             </tr>
                             <tr>
-                              <td className="w-[120px]">Priority</td>
+                              <td className="w-[120px] h-[31px]">Lists</td>
+                              <td className="w-[203px]">
+                                <Global.Dropdown
+                                  items={[
+                                    {
+                                      url: "#",
+                                      content: "Skripsi",
+                                    },
+                                    {
+                                      url: "#",
+                                      content: "Paper Tiger",
+                                    },
+                                  ]}
+                                  fullWidth={true}
+                                  forceOverlap={true}
+                                  className="w-full rounded-lg px-3 py-0.5 transition duration-100 ease-in hover:bg-[#414141]"
+                                  menuItemsClassName="left-0"
+                                  menuButtonClassName="min-h-[25px]"
+                                >
+                                  <span className="px-1">Skripsi</span>
+                                </Global.Dropdown>
+                              </td>
+                              <td className="w-[120px] h-[31px] pl-2">Priority</td>
                               <td>
                                 <Global.Dropdown
                                   items={[
@@ -279,7 +313,13 @@ export default function SlideOverDetail({ open, setOpen }) {
                               </td>
                             </tr>
                             <tr>
-                              <td className="w-[120px]">Project</td>
+                              <td className="w-[120px] h-[31px]">Parent Task</td>
+                              <td className="w-[203px]">
+                                <div className="min-h-[25px] w-full px-3 py-0.5">
+                                  <span className="px-1">None</span>
+                                </div>
+                              </td>
+                              <td className="w-[120px] h-[31px] pl-2">Project</td>
                               <td>
                                 <Global.Dropdown
                                   items={[
@@ -349,8 +389,8 @@ export default function SlideOverDetail({ open, setOpen }) {
                               </td>
                             </tr>
                             <tr>
-                              <td className="w-[120px]">Created By</td>
-                              <td>
+                              <td className="w-[120px] h-[31px]">Created By</td>
+                              <td className="text-[#EAEAEA]">
                                 <div className="min-h-[25px] w-full px-3 py-0.5">
                                   <span className="px-1">Lusa Indah</span>
                                 </div>
@@ -386,20 +426,21 @@ const CardDetailComponent = ({ children, className = "" }) => {
 
 const TabComponent = () => {
   const [selectedComponent, setSelectedComponent] = useState(<ChatComponent />);
+  const [selectedId, setSelectedId] = useState("chat");
 
   const tabs = [
     {
+      id: "chat",
       name: "Chat",
       href: "#",
       icon: BsChat,
-      current: true,
       component: ChatComponent,
     },
     {
+      id: "description",
       name: "Description",
       href: "#",
       icon: IoNewspaperOutline,
-      current: false,
       component: DescriptionComponent,
     },
   ];
@@ -410,51 +451,42 @@ const TabComponent = () => {
 
   return (
     <div className="flex flex-col">
-      <div className="sm:hidden">
-        <label htmlFor="tabs" className="sr-only">
-          Select a tab
-        </label>
-        {/* Use an "onChange" listener to redirect the user to the selected tab URL. */}
-        <select
-          id="tabs"
-          name="tabs"
-          className="block w-full rounded-md border-gray-300 focus:outline-none"
-          defaultValue={tabs.find((tab) => tab.current).name}
-        >
-          {tabs.map((tab) => (
-            <option key={tab.name}>{tab.name}</option>
-          ))}
-        </select>
-      </div>
-      <div className="hidden sm:block">
+      <div className="block">
         <div className="border-b border-[#3A3A3A]">
           <nav className="-mb-px flex space-x-8 px-5" aria-label="Tabs">
-            {tabs.map((tab) => (
-              <a
-                key={tab.name}
-                href={tab.href}
-                className={classNames(
-                  tab.current
-                    ? "border-[rgba(255,255,255,.9)] text-[rgba(255,255,255,.9)]"
-                    : "border-transparent text-[#B3B3B3] hover:border-[#B3B3B3]",
-                  "group inline-flex items-center border-b-2 px-1 pb-2 text-sm font-medium transition duration-200 ease-in"
-                )}
-                aria-current={tab.current ? "page" : undefined}
-                onClick={() => setSelectedComponent(tab.component)}
-              >
-                <tab.icon
+            {tabs.map((tab) => {
+              let isSelected = tab.id === selectedId;
+
+              return (
+                <a
+                  key={tab.name}
+                  href={tab.href}
                   className={classNames(
-                    tab.current
-                      ? "text-[rgba(255,255,255,.9)]"
-                      : "text-[#B3B3B3] group-hover:text-[#B3B3B3]",
-                    "-ml-0.5 mr-2"
+                    isSelected
+                      ? "border-[rgba(255,255,255,.9)] text-[rgba(255,255,255,.9)]"
+                      : "border-transparent text-[#B3B3B3] hover:border-[#B3B3B3]",
+                    "group inline-flex items-center border-b-2 px-1 pb-2 text-sm font-medium transition duration-200 ease-in"
                   )}
-                  aria-hidden="true"
-                  size={16}
-                />
-                <span>{tab.name}</span>
-              </a>
-            ))}
+                  aria-current={isSelected ? "page" : undefined}
+                  onClick={() => {
+                    setSelectedComponent(tab.component);
+                    setSelectedId(tab.id);
+                  }}
+                >
+                  <tab.icon
+                    className={classNames(
+                      isSelected
+                        ? "text-[rgba(255,255,255,.9)]"
+                        : "text-[#B3B3B3] group-hover:text-[#B3B3B3]",
+                      "-ml-0.5 mr-2"
+                    )}
+                    aria-hidden="true"
+                    size={16}
+                  />
+                  <span>{tab.name}</span>
+                </a>
+              );
+            })}
           </nav>
         </div>
       </div>
@@ -483,7 +515,7 @@ const ChatComponent = () => {
         <div></div>
         <div className="relative">
           {isReadUser && (
-            <span className="absolute -bottom-2 left-5 flex h-4 w-4 items-center justify-center rounded-full bg-green-400 text-[8px] text-slate-800">
+            <span className="absolute -bottom-1 left-5 flex h-4 w-4 items-center justify-center rounded-full bg-green-400 text-[8px] text-slate-800">
               D
             </span>
           )}
@@ -505,7 +537,7 @@ const ChatComponent = () => {
 
   return (
     <>
-      <div className="h-[448px] overflow-auto px-5 py-2 text-[12px]">
+      <div className="h-[425px] overflow-auto px-5 py-2 text-[12px]">
         <p className="text-center">Today 15.03</p>
         <ChatBlock>Lusa Indah opened this task</ChatBlock>
         <ChatBlock>
@@ -584,14 +616,18 @@ const ChatComponent = () => {
           </div>
         </ChatHistory>
       </div>
-      <div className="grid auto-rows-[minmax(28px,auto)] grid-cols-[[userPicture]_28px_[content]_minmax(0,1fr)_[readUsersOverflow]_auto_[readUsers]_60px] gap-x-[10px] gap-y-[4px] border-t border-[rgba(255,255,255,.1)] px-5 py-2 text-[12px]">
+      <div className="grid auto-rows-[minmax(28px,auto)] grid-cols-[[userPicture]_28px_[content]_minmax(0,1fr)_[readUsersOverflow]_auto_[readUsers]_60px] gap-x-[10px] gap-y-[4px] border-t border-[rgba(255,255,255,.1)] px-5 pb-1 pt-3 text-[12px]">
         <div className="col-start-[userPicture] row-start-1 self-center">
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-green-400 text-sm text-slate-800">
             D
           </span>
         </div>
         <div>text input here</div>
-        <div>buttons here</div>
+        <div className="self-center">
+          <button className="flex items-center justify-center rounded-full bg-[#D8D8D8] p-2 text-[#1F1F1F] transition duration-100 ease-in hover:bg-[#5A5A5A] active:opacity-80 disabled:bg-[#5A5A5A]">
+            <IoSend size={13} />
+          </button>
+        </div>
       </div>
     </>
   );
@@ -599,7 +635,7 @@ const ChatComponent = () => {
 
 const DescriptionComponent = () => {
   return (
-    <div className="px-5 py-2 text-[15px] text-[#FFFFFFE6]">
+    <div className="px-5 py-2 text-[15px] text-[#FFFFFFE6] c-description-component">
       <div>
         <p className="py-2">
           Hi, there's an urgent issue we need you to look into. We're planning

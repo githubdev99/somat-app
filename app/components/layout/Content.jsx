@@ -337,7 +337,7 @@ export default function Content(props) {
                       return (
                         <tr key={index}>
                           <td
-                            className="relative min-h-[24px] w-[300px] cursor-pointer rounded-lg py-2 pr-3 text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141] hover:px-3"
+                            className="relative min-h-[24px] w-[300px] cursor-pointer rounded-lg pt-2.5 pb-2 pr-3 text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141] hover:px-3"
                             onClick={() => setOpenTaskDetail(true)}
                           >
                             {name}
@@ -595,7 +595,7 @@ export default function Content(props) {
                       return (
                         <tr key={index}>
                           <td
-                            className="relative min-h-[24px] w-[300px] cursor-pointer rounded-lg py-2 pr-3 text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141] hover:px-3"
+                            className="relative min-h-[24px] w-[300px] cursor-pointer rounded-lg pt-2.5 pb-2 pr-3 text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141] hover:px-3"
                             onClick={() => setOpenTaskDetail(true)}
                           >
                             {name}

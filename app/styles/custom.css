@@ -47,3 +47,9 @@
   list-style: outside;
   margin-left: 22px;
 }
+
+.c-chat-history a,
+.c-description-component a {
+  color: #2d8cff;
+  text-decoration: underline;
+}
