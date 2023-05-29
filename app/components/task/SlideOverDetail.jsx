@@ -107,7 +107,7 @@ export default function SlideOverDetail({ open, setOpen }) {
                         <div className="px-5">
                           <table border={0} className="w-full align-middle">
                             <tr>
-                              <td className="w-[120px] h-[31px]">Status</td>
+                              <td className="h-[31px] w-[120px]">Status</td>
                               <td className="w-[203px]">
                                 <Global.Dropdown
                                   items={[
@@ -192,15 +192,19 @@ export default function SlideOverDetail({ open, setOpen }) {
                                   />
                                 </Global.Dropdown>
                               </td>
-                              <td className="w-[120px] h-[31px] pl-2">Created At</td>
+                              <td className="h-[31px] w-[120px] pl-2">
+                                Created At
+                              </td>
                               <td className="text-[#EAEAEA]">
                                 <div className="min-h-[25px] w-full px-3 py-0.5">
-                                  <span className="px-1">Fri, May 19, 2023</span>
+                                  <span className="px-1">
+                                    Fri, May 19, 2023
+                                  </span>
                                 </div>
                               </td>
                             </tr>
                             <tr>
-                              <td className="w-[120px] h-[31px]">Assignees</td>
+                              <td className="h-[31px] w-[120px]">Assignees</td>
                               <td className="w-[203px]">
                                 <Global.Dropdown
                                   items={[
@@ -222,15 +226,19 @@ export default function SlideOverDetail({ open, setOpen }) {
                                   <span className="px-1">Devan</span>
                                 </Global.Dropdown>
                               </td>
-                              <td className="w-[120px] h-[31px] pl-2">Due Date</td>
+                              <td className="h-[31px] w-[120px] pl-2">
+                                Due Date
+                              </td>
                               <td className="text-[#EAEAEA]">
                                 <div className="min-h-[25px] w-full px-3 py-0.5">
-                                  <span className="px-1">Fri, May 19, 2023</span>
+                                  <span className="px-1">
+                                    Fri, May 19, 2023
+                                  </span>
                                 </div>
                               </td>
                             </tr>
                             <tr>
-                              <td className="w-[120px] h-[31px]">Lists</td>
+                              <td className="h-[31px] w-[120px]">Lists</td>
                               <td className="w-[203px]">
                                 <Global.Dropdown
                                   items={[
@@ -252,14 +260,18 @@ export default function SlideOverDetail({ open, setOpen }) {
                                   <span className="px-1">Skripsi</span>
                                 </Global.Dropdown>
                               </td>
-                              <td className="w-[120px] h-[31px] pl-2">Priority</td>
+                              <td className="h-[31px] w-[120px] pl-2">
+                                Priority
+                              </td>
                               <td>
                                 <Global.Dropdown
                                   items={[
                                     {
                                       url: "#",
                                       content: (
-                                        <span className="text-white">None</span>
+                                        <span className="text-[rgba(255,255,255,.9)]">
+                                          None
+                                        </span>
                                       ),
                                       isInnerHTML: false,
                                     },
@@ -313,20 +325,26 @@ export default function SlideOverDetail({ open, setOpen }) {
                               </td>
                             </tr>
                             <tr>
-                              <td className="w-[120px] h-[31px]">Parent Task</td>
+                              <td className="h-[31px] w-[120px]">
+                                Parent Task
+                              </td>
                               <td className="w-[203px]">
                                 <div className="min-h-[25px] w-full px-3 py-0.5">
                                   <span className="px-1">None</span>
                                 </div>
                               </td>
-                              <td className="w-[120px] h-[31px] pl-2">Project</td>
+                              <td className="h-[31px] w-[120px] pl-2">
+                                Project
+                              </td>
                               <td>
                                 <Global.Dropdown
                                   items={[
                                     {
                                       url: "#",
                                       content: (
-                                        <span className="text-white">None</span>
+                                        <span className="text-[rgba(255,255,255,.9)]">
+                                          None
+                                        </span>
                                       ),
                                       isInnerHTML: false,
                                     },
@@ -389,7 +407,7 @@ export default function SlideOverDetail({ open, setOpen }) {
                               </td>
                             </tr>
                             <tr>
-                              <td className="w-[120px] h-[31px]">Created By</td>
+                              <td className="h-[31px] w-[120px]">Created By</td>
                               <td className="text-[#EAEAEA]">
                                 <div className="min-h-[25px] w-full px-3 py-0.5">
                                   <span className="px-1">Lusa Indah</span>
@@ -616,13 +634,21 @@ const ChatComponent = () => {
           </div>
         </ChatHistory>
       </div>
-      <div className="grid auto-rows-[minmax(28px,auto)] grid-cols-[[userPicture]_28px_[content]_minmax(0,1fr)_[readUsersOverflow]_auto_[readUsers]_60px] gap-x-[10px] gap-y-[4px] border-t border-[rgba(255,255,255,.1)] px-5 pb-1 pt-3 text-[12px]">
+      <div className="grid auto-rows-[minmax(28px,auto)] grid-cols-[[userPicture]_28px_[content]_minmax(0,1fr)_[readUsersOverflow]_auto_[readUsers]_60px] gap-x-[14px] gap-y-[4px] border-t border-[rgba(255,255,255,.1)] px-5 pb-1 pt-3 text-[12px]">
         <div className="col-start-[userPicture] row-start-1 self-center">
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-green-400 text-sm text-slate-800">
             D
           </span>
         </div>
-        <div>text input here</div>
+        <div>
+          <input
+            id="chat"
+            name="chat"
+            type="text"
+            autoComplete="chat"
+            className="block w-full rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+          />
+        </div>
         <div className="self-center">
           <button className="flex items-center justify-center rounded-full bg-[#D8D8D8] p-2 text-[#1F1F1F] transition duration-100 ease-in hover:bg-[#5A5A5A] active:opacity-80 disabled:bg-[#5A5A5A]">
             <IoSend size={13} />
@@ -635,7 +661,7 @@ const ChatComponent = () => {
 
 const DescriptionComponent = () => {
   return (
-    <div className="px-5 py-2 text-[15px] text-[#FFFFFFE6] c-description-component">
+    <div className="c-description-component px-5 py-2 text-[15px] text-[#FFFFFFE6]">
       <div>
         <p className="py-2">
           Hi, there's an urgent issue we need you to look into. We're planning

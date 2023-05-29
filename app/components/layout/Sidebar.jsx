@@ -11,7 +11,7 @@ import { RiUserAddLine } from "react-icons/ri";
 import { BsFillCaretRightFill } from "react-icons/bs";
 import { GrClose } from "react-icons/gr";
 import { ICON_COLLAPSIBLE_ROTATE } from "~/lib/animation";
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useState } from "react";
 import classNames from "classnames";
 import { Dialog, Transition } from "@headlessui/react";
 
@@ -66,17 +66,17 @@ export default function Sidebar(props) {
 }
 
 function SidebarWrapper(props) {
-  const { lists, setSidebarOpen, setOpenTaskDetail } = props;
+  const { data, lists, setSidebarOpen, setOpenTaskDetail } = props;
+  const { params } = data || {};
+  const { slug } = params || {};
 
   const [isOpenCollapsible, setIsOpenCollapsible] = useState(false);
-  const [clickedNavId, setClickedNavId] = useState("");
-
-  const listNavRefs = useRef([]);
+  const [clickedNavId, setClickedNavId] = useState(slug || "");
 
   const defaultNavs = [
     {
-      id: "default-sidenav-1",
-      url: "#",
+      id: "inbox",
+      url: "/app/inbox",
       content: (
         <>
           <MdInbox size={18} />
@@ -183,7 +183,7 @@ function SidebarWrapper(props) {
           </li>
           <li>
             <div
-              className="my-1 flex cursor-pointer flex-row items-center gap-2 px-1 py-1 text-white"
+              className="my-1 flex cursor-pointer flex-row items-center gap-2 px-1 py-1 text-[rgba(255,255,255,.9)]"
               onClick={() => setIsOpenCollapsible(!isOpenCollapsible)}
             >
               <motion.span
@@ -227,16 +227,19 @@ function SidebarWrapper(props) {
           </li>
           <li className="mt-auto">
             <div className="flex h-11 items-center justify-between">
-              <div className="inline-block cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141] hover:text-white active:bg-slate-500">
+              <Link
+                to="/settings/profile"
+                className="inline-block cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141] hover:text-[rgba(255,255,255,.9)] active:bg-slate-500"
+              >
                 <HiCog size={18} />
-              </div>
+              </Link>
               <div
-                className="inline-block cursor-pointer rounded-full bg-[#232323] px-4 py-1 text-white transition duration-200 ease-in hover:bg-[#404040] active:bg-slate-500"
+                className="inline-block cursor-pointer rounded-full bg-[#232323] px-4 py-1 text-[rgba(255,255,255,.9)] transition duration-200 ease-in hover:bg-[#404040] active:bg-slate-500"
                 onClick={() => setOpenTaskDetail(true)}
               >
                 <MdOutlineAddBox size={18} />
               </div>
-              <div className="inline-block cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141] hover:text-white active:bg-slate-500">
+              <div className="inline-block cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141] hover:text-[rgba(255,255,255,.9)] active:bg-slate-500">
                 <AiOutlineQuestionCircle size={18} />
               </div>
             </div>

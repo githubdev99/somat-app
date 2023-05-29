@@ -15,10 +15,11 @@ export default function Dropdown(props) {
     menuAs = "div",
     menuItemsClassName = "",
     menuButtonClassName = "",
+    position = "right",
   } = props;
 
   const menuItemsClasses = classNames(
-    `absolute right-0 z-10 w-64 origin-top-right divide-y divide-gray-100 rounded-md border border-[rgba(255,255,255,.1)] bg-[rgba(36,36,36,1)] shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none ${menuItemsClassName}`,
+    `absolute ${position}-0 z-10 w-64 origin-top-${position} divide-y divide-gray-100 rounded-md border border-[rgba(255,255,255,.1)] bg-[rgba(36,36,36,1)] shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none ${menuItemsClassName}`,
     {
       "top-[-2px]": forceOverlap,
       "mt-2": !forceOverlap,

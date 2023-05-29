@@ -1,9 +1,9 @@
-export const meta = () => [{ title: "Remix Notes" }];
+import { useEffect } from "react";
+
+export const meta = () => [{ title: "Somat App" }];
 
 export default function Index() {
-  return (
-    <main className="relative min-h-screen bg-white sm:flex sm:items-center sm:justify-center">
-      index page
-    </main>
-  );
+  useEffect(() => {
+    window.location.href = "/app/test";
+  }, []);
 }
