@@ -38,7 +38,7 @@ export default function Lists(props) {
       projectHexColor: "#08c408",
     },
     {
-      name: "Buat BAB 1",
+      name: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
       status: "In progress",
       assignees: [
         {
@@ -61,7 +61,7 @@ export default function Lists(props) {
 
   const projectListExamples2 = [
     {
-      name: "Revisi landasan teori",
+      name: "Revisi landasan teori asckj askjc asjncaksjnckasn ",
       status: "In progress",
       assignees: "Devan",
       dueDate: "27 May 2023",
@@ -367,10 +367,10 @@ export default function Lists(props) {
                       return (
                         <tr key={index}>
                           <td
-                            className="relative min-h-[24px] w-[300px] cursor-pointer rounded-lg pb-2 pr-3 pt-2.5 text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141] hover:px-3"
+                            className="relative min-h-[24px] w-[340px] cursor-pointer rounded-lg pb-2 pr-3 pt-2.5 text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141] hover:px-3"
                             onClick={() => setOpenTaskDetail(true)}
                           >
-                            {name}
+                            <p className="w-[300px] truncate">{name}</p>
                           </td>
                           <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
                             <Global.Dropdown
@@ -648,10 +648,10 @@ export default function Lists(props) {
                       return (
                         <tr key={index}>
                           <td
-                            className="relative min-h-[24px] w-[300px] cursor-pointer rounded-lg pb-2 pr-3 pt-2.5 text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141] hover:px-3"
+                            className="relative min-h-[24px] w-[340px] cursor-pointer rounded-lg pb-2 pr-3 pt-2.5 text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141] hover:px-3"
                             onClick={() => setOpenTaskDetail(true)}
                           >
-                            {name}
+                            <p className="w-[300px] truncate">{name}</p>
                           </td>
                           <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
                             <Global.Dropdown

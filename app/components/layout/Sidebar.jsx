@@ -137,7 +137,7 @@ function SidebarWrapper(props) {
   ];
 
   return (
-    <div className="flex grow flex-col gap-y-2 overflow-y-auto bg-[rgba(18,18,18,1)] px-4 text-[14px] font-normal not-italic text-[#ACACAC]">
+    <div className="flex grow flex-col gap-y-2 overflow-y-auto border-r border-r-[rgba(255,255,255,.1)] bg-[rgba(18,18,18,1)] px-4 text-[14px] font-normal not-italic text-[#ACACAC]">
       <div className="h-13 -mx-2 flex items-center pt-2">
         <div className="group flex w-full cursor-pointer flex-row items-center rounded-lg transition duration-200 ease-in hover:bg-[#232323]">
           <div className="flex-1 px-3 py-1">Logo here</div>

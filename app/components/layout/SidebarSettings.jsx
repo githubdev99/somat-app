@@ -98,7 +98,7 @@ function SidebarWrapper(props) {
       <div className="h-13 -mx-2 flex items-center pt-3">
         <div className="flex-1 px-2 py-1">
           <Link
-            to="/"
+            to="/app/test"
             className="inline-block cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141] hover:text-[rgba(255,255,255,.9)] active:bg-slate-500"
           >
             <HiOutlineArrowLeft size={18} />

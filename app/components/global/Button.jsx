@@ -1,17 +1,15 @@
 import { Link } from "@remix-run/react";
 import classNames from "classnames";
 
-export default function Button(props) {
-  const {
-    type,
-    color,
-    size,
-    to = "#",
-    className = "",
-    children,
-    ...otherProps
-  } = props;
-
+export default function Button({
+  type,
+  color,
+  size,
+  to = "#",
+  className = "",
+  children,
+  ...otherProps
+}) {
   const classes = classNames(
     `cursor-pointer rounded-lg px-2 py-1 text-sm font-normal shadow-sm transition duration-200 ease-in flex items-center justify-center gap-2 active:opacity-80 focus:outline-none ${className}`,
     {

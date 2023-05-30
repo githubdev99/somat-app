@@ -19,6 +19,7 @@ export default function Profile(props) {
               name="firstname"
               type="text"
               autoComplete="firstname"
+              defaultValue="Devan"
               className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
             />
           </div>
@@ -38,6 +39,7 @@ export default function Profile(props) {
               name="lastname"
               type="text"
               autoComplete="lastname"
+              defaultValue="Ramadhan"
               className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
             />
           </div>
@@ -57,6 +59,7 @@ export default function Profile(props) {
               name="username"
               type="text"
               autoComplete="username"
+              defaultValue="devan"
               className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
             />
           </div>

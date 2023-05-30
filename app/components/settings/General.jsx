@@ -19,6 +19,7 @@ export default function General(props) {
               name="workspace_name"
               type="text"
               autoComplete="workspace_name"
+              defaultValue="Local Team"
               className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
             />
           </div>
