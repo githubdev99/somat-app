@@ -2,6 +2,7 @@ import Badge from "./global/Badge";
 import Button from "./global/Button";
 import Dropdown from "./global/Dropdown";
 import Modal from "./global/Modal";
+import Datepicker from "./global/Datepicker";
 
 import Sidebar from "./layout/Sidebar";
 import Container from "./layout/Container";
@@ -24,6 +25,7 @@ export const Global = {
   Button,
   Dropdown,
   Modal,
+  Datepicker,
 };
 
 export const Layout = {

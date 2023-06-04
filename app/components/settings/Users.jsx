@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { BsThreeDots } from "react-icons/bs";
-import { FaUserCircle } from "react-icons/fa";
+import { MdOutlineAddBox } from "react-icons/md";
 import { Global } from "~/components";
 
 export default function Users(props) {
@@ -8,7 +8,56 @@ export default function Users(props) {
 
   return (
     <>
-      <Global.Modal open={openInviteModal} setOpen={setOpenInviteModal} />
+      <Global.Modal
+        open={openInviteModal}
+        setOpen={setOpenInviteModal}
+        positionClassName="inset-x-0 top-3"
+        size="xl"
+      >
+        <div className="px-5 py-3">
+          <div className="mb-2 text-[rgba(255,255,255,.9)]">
+            Invite coworkers to join this workspace
+          </div>
+          <div className="mb-2">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              className="block w-full rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-[rgba(255,255,255,.4)] hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+              placeholder="name@example.com"
+            />
+          </div>
+          <div className="mb-2">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              className="block w-full rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-[rgba(255,255,255,.4)] hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+              placeholder="name@example.com"
+            />
+          </div>
+          <Global.Button type="button" color="transparent" size="sm">
+            <MdOutlineAddBox size={18} /> Add another
+          </Global.Button>
+        </div>
+        <div className="border-t border-t-[rgba(255,255,255,.1)] px-5 py-3">
+          <div className="flex justify-between">
+            <Global.Button
+              type="button"
+              color="outlined-secondary"
+              size="sm"
+              onClick={() => setOpenInviteModal(false)}
+            >
+              Cancel
+            </Global.Button>
+            <Global.Button type="button" color="outlined-secondary" size="sm">
+              Invite
+            </Global.Button>
+          </div>
+        </div>
+      </Global.Modal>
       <div className="text-[#ACACAC]">
         <div className="flex items-center gap-2 text-[rgba(255,255,255,.9)]">
           <div>Users</div>
@@ -82,7 +131,7 @@ export default function Users(props) {
                       <div className="h-[22px] w-[22px] flex-shrink-0">
                         <img
                           className="h-[22px] w-[22px] rounded-full"
-                          src="https://imageproxy.height.app/240/https%3A%2F%2Ffiles.height.app%2Fe248e474-5297-48fc-b7f8-d28971bbf489.jpg"
+                          src="/images/user-img-sample.jpg"
                           alt=""
                         />
                       </div>
@@ -107,7 +156,7 @@ export default function Users(props) {
                       <div className="h-[22px] w-[22px] flex-shrink-0">
                         <img
                           className="h-[22px] w-[22px] rounded-full"
-                          src="https://imageproxy.height.app/240/https%3A%2F%2Ffiles.height.app%2Fe248e474-5297-48fc-b7f8-d28971bbf489.jpg"
+                          src="/images/user-img-sample.jpg"
                           alt=""
                         />
                       </div>
@@ -132,7 +181,7 @@ export default function Users(props) {
                       <div className="h-[22px] w-[22px] flex-shrink-0">
                         <img
                           className="h-[22px] w-[22px] rounded-full"
-                          src="https://imageproxy.height.app/240/https%3A%2F%2Ffiles.height.app%2Fe248e474-5297-48fc-b7f8-d28971bbf489.jpg"
+                          src="/images/user-img-sample.jpg"
                           alt=""
                         />
                       </div>

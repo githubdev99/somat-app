@@ -75,7 +75,7 @@ export default function Profile(props) {
               <div className="h-[120px] w-[120px] flex-shrink-0">
                 <img
                   className="h-[120px] w-[120px] rounded-full"
-                  src="https://imageproxy.height.app/240/https%3A%2F%2Ffiles.height.app%2Fe248e474-5297-48fc-b7f8-d28971bbf489.jpg"
+                  src="/images/user-img-sample.jpg"
                   alt=""
                 />
               </div>

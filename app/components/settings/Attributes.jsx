@@ -6,9 +6,6 @@ import { HuePicker } from "react-color";
 import { MdOutlineAddBox } from "react-icons/md";
 
 export default function Attributes(props) {
-  const [clickedNavId, setClickedNavId] = useState("");
-  const [colorHexCode, setColorHexCode] = useState("#000000");
-
   const items = [
     {
       id: "status",
@@ -38,6 +35,9 @@ export default function Attributes(props) {
       ),
     },
   ];
+
+  const [clickedNavId, setClickedNavId] = useState(items[0].id || "");
+  const [colorHexCode, setColorHexCode] = useState("#000000");
 
   const defaultDatas = [
     {

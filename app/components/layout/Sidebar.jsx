@@ -3,14 +3,13 @@ import { motion } from "framer-motion";
 import { TbLayoutSidebarLeftCollapse, TbTrash } from "react-icons/tb";
 import { HiCog } from "react-icons/hi";
 import { MdInbox, MdOutlineAddBox } from "react-icons/md";
-import { AiOutlineQuestionCircle } from "react-icons/ai";
+import { AiOutlinePlus, AiOutlineQuestionCircle } from "react-icons/ai";
 import { GoPencil } from "react-icons/go";
 import { BiLockAlt } from "react-icons/bi";
 import { CgAssign } from "react-icons/cg";
 import { RiUserAddLine } from "react-icons/ri";
 import { BsFillCaretRightFill } from "react-icons/bs";
-import { GrClose } from "react-icons/gr";
-import { ICON_COLLAPSIBLE_ROTATE } from "~/lib/animation";
+import { ICON_COLLAPSIBLE_ROTATE, VISIBLE } from "~/lib/animation";
 import { Fragment, useState } from "react";
 import classNames from "classnames";
 import { Dialog, Transition } from "@headlessui/react";
@@ -66,17 +65,26 @@ export default function Sidebar(props) {
 }
 
 function SidebarWrapper(props) {
-  const { data, lists, setSidebarOpen, setOpenTaskDetail } = props;
+  const {
+    data,
+    lists,
+    setSidebarOpen,
+    setOpenTaskDetail,
+    setOpenAddTaskModal,
+    setOpenAddListModal,
+  } = props;
   const { params } = data || {};
   const { slug } = params || {};
 
   const [isOpenCollapsible, setIsOpenCollapsible] = useState(false);
   const [clickedNavId, setClickedNavId] = useState(slug || "");
 
+  let isAuthPage = slug && String(slug).includes("auth");
+
   const defaultNavs = [
     {
       id: "inbox",
-      url: "/app/inbox",
+      url: isAuthPage ? "/app/auth" : "/app/inbox",
       content: (
         <>
           <MdInbox size={18} />
@@ -86,7 +94,7 @@ function SidebarWrapper(props) {
     },
     {
       id: "default-sidenav-2",
-      url: "#",
+      url: isAuthPage ? "/app/auth" : "/app/draft",
       content: (
         <>
           <GoPencil size={18} />
@@ -96,7 +104,7 @@ function SidebarWrapper(props) {
     },
     {
       id: "default-sidenav-3",
-      url: "#",
+      url: isAuthPage ? "/app/auth" : "/app/assigned",
       content: (
         <>
           <CgAssign size={18} />
@@ -106,7 +114,7 @@ function SidebarWrapper(props) {
     },
     {
       id: "default-sidenav-4",
-      url: "#",
+      url: isAuthPage ? "/app/auth" : "/app/created",
       content: (
         <>
           <RiUserAddLine size={18} />
@@ -116,7 +124,7 @@ function SidebarWrapper(props) {
     },
     {
       id: "default-sidenav-5",
-      url: "#",
+      url: isAuthPage ? "/app/auth" : "/app/private",
       content: (
         <>
           <BiLockAlt size={18} />
@@ -126,7 +134,7 @@ function SidebarWrapper(props) {
     },
     {
       id: "default-sidenav-6",
-      url: "#",
+      url: isAuthPage ? "/app/auth" : "/app/trash",
       content: (
         <>
           <TbTrash size={18} />
@@ -137,115 +145,139 @@ function SidebarWrapper(props) {
   ];
 
   return (
-    <div className="flex grow flex-col gap-y-2 overflow-y-auto border-r border-r-[rgba(255,255,255,.1)] bg-[rgba(18,18,18,1)] px-4 text-[14px] font-normal not-italic text-[#ACACAC]">
-      <div className="h-13 -mx-2 flex items-center pt-2">
-        <div className="group flex w-full cursor-pointer flex-row items-center rounded-lg transition duration-200 ease-in hover:bg-[#232323]">
-          <div className="flex-1 px-3 py-1">Logo here</div>
-          <div className="border-1 px-2 py-1 group-hover:border-l-[1px] group-hover:border-[#393939] lg:hidden lg:border-0">
-            <div
-              className="cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141]"
-              onClick={() => setSidebarOpen && setSidebarOpen(false)}
-            >
-              <TbLayoutSidebarLeftCollapse size={18} />
+    <>
+      <div className="flex grow flex-col gap-y-2 overflow-y-auto border-r border-r-[rgba(255,255,255,.1)] bg-[rgba(18,18,18,1)] px-4 text-[14px] font-normal not-italic text-[#ACACAC]">
+        <div className="h-13 -mx-2 flex items-center pt-2">
+          <div className="group flex w-full cursor-pointer flex-row items-center rounded-lg transition duration-200 ease-in hover:bg-[#232323]">
+            <div className="flex-1 px-3 py-1">
+              {isAuthPage ? "My Workspace" : "Local Team"}
+            </div>
+            <div className="border-1 px-2 py-1 group-hover:border-l-[1px] group-hover:border-[#393939] lg:hidden lg:border-0">
+              <div
+                className="cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141]"
+                onClick={() => setSidebarOpen && setSidebarOpen(false)}
+              >
+                <TbLayoutSidebarLeftCollapse size={18} />
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <nav className="flex flex-1 flex-col">
-        <ul className="flex flex-1 flex-col gap-y-2">
-          <li>
-            <ul className="-mx-2 space-y-1">
-              {defaultNavs.map((item, index) => {
-                const { id, url, content } = item;
+        <nav className="flex flex-1 flex-col">
+          <ul className="flex flex-1 flex-col gap-y-2">
+            <li>
+              <ul className="-mx-2 space-y-1">
+                {defaultNavs.map((item, index) => {
+                  const { id, url, content } = item;
 
-                const navClasses = classNames(
-                  "my-1 flex cursor-pointer flex-row items-center gap-2 rounded-lg px-3 py-1 transition duration-150 ease-in hover:bg-[#232323] active:opacity-80",
-                  {
-                    "bg-[rgba(255,255,255,.14)] text-[#FFFFFFE6]":
-                      clickedNavId === id,
-                  }
-                );
+                  const navClasses = classNames(
+                    "my-1 flex cursor-pointer flex-row items-center gap-2 rounded-lg px-3 py-1 transition duration-150 ease-in hover:bg-[#232323] active:opacity-80",
+                    {
+                      "bg-[rgba(255,255,255,.14)] text-[#FFFFFFE6]":
+                        clickedNavId === id,
+                    }
+                  );
 
-                return (
-                  <li key={index}>
-                    <Link
-                      to={url}
-                      className={navClasses}
-                      key={index}
-                      onClick={() => setClickedNavId(id)}
-                    >
-                      {content}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </li>
-          <li>
-            <div
-              className="my-1 flex cursor-pointer flex-row items-center gap-2 px-1 py-1 text-[rgba(255,255,255,.9)]"
-              onClick={() => setIsOpenCollapsible(!isOpenCollapsible)}
-            >
-              <motion.span
-                initial={false}
-                animate={isOpenCollapsible ? "open" : "closed"}
-                variants={ICON_COLLAPSIBLE_ROTATE}
-              >
-                <BsFillCaretRightFill size={15} />
-              </motion.span>
-              Lists
-            </div>
-            <ul className="-mx-2 space-y-1">
-              {lists.map((item, index) => {
-                const { icon, hexColor, name } = item;
-
-                let id = `list-nav-${index}`;
-
-                const listNavClasses = classNames(
-                  "my-1 flex cursor-pointer flex-row items-center gap-1 rounded-lg px-2 py-[3px] transition duration-150 ease-in hover:bg-[#232323] active:opacity-80",
-                  {
-                    "bg-[rgba(255,255,255,.14)] text-[#FFFFFFE6]":
-                      clickedNavId === id,
-                  }
-                );
-
-                return (
-                  <li
-                    className={listNavClasses}
-                    key={index}
-                    onClick={() => setClickedNavId(id)}
-                  >
-                    <div
-                      className="c-list-icon cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141] active:opacity-80"
-                      dangerouslySetInnerHTML={{ __html: icon }}
-                    ></div>
-                    {name}
-                  </li>
-                );
-              })}
-            </ul>
-          </li>
-          <li className="mt-auto">
-            <div className="flex h-11 items-center justify-between">
-              <Link
-                to="/settings/profile"
-                className="inline-block cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141] hover:text-[rgba(255,255,255,.9)] active:bg-slate-500"
-              >
-                <HiCog size={18} />
-              </Link>
+                  return (
+                    <li key={index}>
+                      <Link
+                        to={url}
+                        className={navClasses}
+                        key={index}
+                        onClick={() => setClickedNavId(id)}
+                      >
+                        {content}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </li>
+            <li>
               <div
-                className="inline-block cursor-pointer rounded-full bg-[#232323] px-4 py-1 text-[rgba(255,255,255,.9)] transition duration-200 ease-in hover:bg-[#404040] active:bg-slate-500"
-                onClick={() => setOpenTaskDetail(true)}
+                className="my-1 flex cursor-pointer flex-row items-center gap-2 px-1 py-1 text-[rgba(255,255,255,.9)]"
+                onClick={() => setIsOpenCollapsible(!isOpenCollapsible)}
               >
-                <MdOutlineAddBox size={18} />
+                <motion.span
+                  initial={false}
+                  animate={isOpenCollapsible ? "open" : "closed"}
+                  variants={ICON_COLLAPSIBLE_ROTATE}
+                >
+                  <BsFillCaretRightFill size={15} />
+                </motion.span>
+                Lists
               </div>
-              <div className="inline-block cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141] hover:text-[rgba(255,255,255,.9)] active:bg-slate-500">
-                <AiOutlineQuestionCircle size={18} />
+              {isOpenCollapsible && (
+                <motion.ul
+                  initial="hidden"
+                  animate={isOpenCollapsible ? "visible" : "hidden"}
+                  variants={VISIBLE}
+                  className="-mx-2 space-y-1"
+                >
+                  {lists.map((item, index) => {
+                    const { icon, hexColor, name } = item;
+
+                    let id = `list-nav-${index}`;
+
+                    const listNavClasses = classNames(
+                      "my-1 flex cursor-pointer flex-row items-center gap-1 rounded-lg px-2 py-[3px] transition duration-150 ease-in hover:bg-[#232323] active:opacity-80",
+                      {
+                        "bg-[rgba(255,255,255,.14)] text-[#FFFFFFE6]":
+                          clickedNavId === id,
+                      }
+                    );
+
+                    return (
+                      <li
+                        className={listNavClasses}
+                        key={index}
+                        onClick={() => setClickedNavId(id)}
+                      >
+                        <div
+                          className="c-list-icon cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141] active:opacity-80"
+                          dangerouslySetInnerHTML={{ __html: icon }}
+                        ></div>
+                        {name}
+                      </li>
+                    );
+                  })}
+                </motion.ul>
+              )}
+            </li>
+            <li>
+              <ul className="-mx-2 space-y-1">
+                <li>
+                  <div
+                    className="my-1 flex cursor-pointer flex-row items-center gap-2 rounded-lg px-3 py-1 transition duration-150 ease-in hover:bg-[#232323] active:opacity-80"
+                    onClick={() => setOpenAddListModal(true)}
+                  >
+                    <AiOutlinePlus size={18} />
+                    New List
+                  </div>
+                </li>
+              </ul>
+            </li>
+            <li className="mt-auto">
+              <div className="flex h-11 items-center justify-between">
+                <Link
+                  to="/settings/profile"
+                  className="inline-block cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141] hover:text-[rgba(255,255,255,.9)] active:bg-slate-500"
+                >
+                  <HiCog size={18} />
+                </Link>
+                <div
+                  className="inline-block cursor-pointer rounded-full bg-[#232323] px-4 py-1 text-[rgba(255,255,255,.9)] transition duration-200 ease-in hover:bg-[#404040] active:bg-slate-500"
+                  onClick={() => setOpenAddTaskModal(true)}
+                >
+                  <MdOutlineAddBox size={18} />
+                </div>
+                <div className="inline-block cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141] hover:text-[rgba(255,255,255,.9)] active:bg-slate-500">
+                  <AiOutlineQuestionCircle size={18} />
+                </div>
               </div>
-            </div>
-          </li>
-        </ul>
-      </nav>
-    </div>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </>
   );
 }

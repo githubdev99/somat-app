@@ -8,10 +8,26 @@ export const ICON_COLLAPSIBLE_ROTATE = {
 };
 
 export const VISIBLE = {
-  hidden: { display: "none", opacity: 0, scale: 0 },
-  visible: { display: "block", opacity: 1, scale: 1 },
-  transition: {
-    type: "spring",
-    duration: 0.8,
+  hidden: { opacity: 0, scale: 0 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      type: "spring",
+      duration: 0.7,
+    },
   },
+};
+
+export const VISIBLE_CUSTOM = {
+  hidden: { opacity: 0, scale: 0 },
+  visible: (custom) => ({
+    opacity: 1,
+    scale: 1,
+    transition: {
+      type: "spring",
+      duration: 0.7,
+      delay: custom * 0.13,
+    },
+  }),
 };

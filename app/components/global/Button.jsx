@@ -23,6 +23,10 @@ export default function Button({
         color === "outlined-secondary",
       "bg-white/80 text-[rgba(0,0,0,0.9)] shadow-sm hover:bg-white/50 active:bg-slate-500":
         color === "light",
+      "bg-[rgba(36,36,36,1)] text-[rgba(255,255,255,0.9)] shadow-sm hover:bg-[rgba(54,54,54,1)] active:opacity-80":
+        color === "dark",
+      "bg-[#FE5E85] text-[rgba(0,0,0,0.9)] shadow-sm hover:opacity-80 active:bg-[#db5173]":
+        color === "danger",
     }
   );
 

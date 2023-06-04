@@ -10,7 +10,8 @@
     "app/components/layout/Sidebar.jsx",
     "app/components/layout/Content.jsx",
     "app/components/layout/Container.jsx",
-    "app/components/index.js"
+    "app/components/index.js",
+    "tailwind.config.js"
   ],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2019"],
