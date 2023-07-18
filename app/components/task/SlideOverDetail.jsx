@@ -1,11 +1,19 @@
 import { Global } from "~/components";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { BsThreeDots, BsChat } from "react-icons/bs";
 import { FaRegBellSlash } from "react-icons/fa";
 import { IoNewspaperOutline, IoSend } from "react-icons/io5";
 
-export default function SlideOverDetail({ open, setOpen }) {
+export default function SlideOverDetail() {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    window.slideOverDetail = () => {
+      setOpen(true);
+    };
+  }, []);
+
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog
@@ -33,7 +41,7 @@ export default function SlideOverDetail({ open, setOpen }) {
                       <div className="flex items-center justify-between gap-4">
                         <div className="leading-6">T-1629</div>
                         <Dialog.Title className="leading-6">
-                          Buat BAB 1
+                          Login Page
                         </Dialog.Title>
                         <div className="ml-auto flex h-7 flex-row items-center gap-2">
                           <div>
@@ -244,11 +252,7 @@ export default function SlideOverDetail({ open, setOpen }) {
                                   items={[
                                     {
                                       url: "#",
-                                      content: "Skripsi",
-                                    },
-                                    {
-                                      url: "#",
-                                      content: "Paper Tiger",
+                                      content: "ShopCommerce",
                                     },
                                   ]}
                                   fullWidth={true}
@@ -257,7 +261,7 @@ export default function SlideOverDetail({ open, setOpen }) {
                                   menuItemsClassName="left-0"
                                   menuButtonClassName="min-h-[25px]"
                                 >
-                                  <span className="px-1">Skripsi</span>
+                                  <span className="px-1">ShopCommerce</span>
                                 </Global.Dropdown>
                               </td>
                               <td className="h-[31px] w-[120px] pl-2">
@@ -352,7 +356,7 @@ export default function SlideOverDetail({ open, setOpen }) {
                                       url: "#",
                                       content: (
                                         <span style={{ color: "#08c408" }}>
-                                          BAB 1
+                                          PHASE 1
                                         </span>
                                       ),
                                       isInnerHTML: false,
@@ -361,7 +365,7 @@ export default function SlideOverDetail({ open, setOpen }) {
                                       url: "#",
                                       content: (
                                         <span style={{ color: "#725cff" }}>
-                                          BAB 2
+                                          PHASE 2
                                         </span>
                                       ),
                                       isInnerHTML: false,
@@ -370,7 +374,7 @@ export default function SlideOverDetail({ open, setOpen }) {
                                       url: "#",
                                       content: (
                                         <span style={{ color: "#1f96ff" }}>
-                                          BAB 3
+                                          PHASE 3
                                         </span>
                                       ),
                                       isInnerHTML: false,
@@ -379,7 +383,7 @@ export default function SlideOverDetail({ open, setOpen }) {
                                       url: "#",
                                       content: (
                                         <span style={{ color: "#ff2eb9" }}>
-                                          BAB 4
+                                          PHASE 4
                                         </span>
                                       ),
                                       isInnerHTML: false,
@@ -401,7 +405,7 @@ export default function SlideOverDetail({ open, setOpen }) {
                                     className="px-1"
                                     style={{ color: "#08c408" }}
                                   >
-                                    BAB 1
+                                    PHASE 1
                                   </span>
                                 </Global.Dropdown>
                               </td>
@@ -410,7 +414,7 @@ export default function SlideOverDetail({ open, setOpen }) {
                               <td className="h-[31px] w-[120px]">Created By</td>
                               <td className="text-[#EAEAEA]">
                                 <div className="min-h-[25px] w-full px-3 py-0.5">
-                                  <span className="px-1">Lusa Indah</span>
+                                  <span className="px-1">Mark</span>
                                 </div>
                               </td>
                             </tr>
@@ -557,19 +561,16 @@ const ChatComponent = () => {
     <>
       <div className="h-[425px] overflow-auto px-5 py-2 text-[12px]">
         <p className="text-center">Today 15.03</p>
-        <ChatBlock>Lusa Indah opened this task</ChatBlock>
+        <ChatBlock>Mark opened this task</ChatBlock>
         <ChatBlock>
-          Lusa Indah updated the name <br />
-          Buat BAB 1 Lusa Indah updated the name <br />
-          Buat BAB 1 Lusa Indah updated the name <br />
-          Buat BAB 1 Lusa Indah updated the name <br />
-          Buat BAB 1
+          Mark updated the name <br />
+          Login Page Mark updated the name <br />
         </ChatBlock>
         <ChatBlock>
-          Lusa Indah update project to{" "}
-          <span style={{ color: "#08c408" }}>BAB 1</span>
+          Mark update project to{" "}
+          <span style={{ color: "#08c408" }}>PHASE 1</span>
         </ChatBlock>
-        <ChatBlock>Lusa Indah assign Devan</ChatBlock>
+        <ChatBlock>Mark assign Devan</ChatBlock>
         <ChatHistory userImageText="D" isReadUser={true}>
           <div>
             <p>

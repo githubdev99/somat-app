@@ -27,6 +27,8 @@ export default function Button({
         color === "dark",
       "bg-[#FE5E85] text-[rgba(0,0,0,0.9)] shadow-sm hover:opacity-80 active:bg-[#db5173]":
         color === "danger",
+      "bg-green-500 text-[rgba(0,0,0,0.9)] shadow-sm hover:opacity-80 active:bg-green-600":
+        color === "success",
     }
   );
 

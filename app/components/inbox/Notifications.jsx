@@ -5,7 +5,7 @@ import { Fragment, useState } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { MdOutlineAddBox } from "react-icons/md";
 
-export default function Notifications(props) {
+export default function Notifications() {
   const itemsExample = [
     {
       title: "Demo Store",
@@ -191,6 +191,7 @@ export default function Notifications(props) {
               <div
                 key={index}
                 className="cursor-pointer rounded-lg p-3 transition duration-150 ease-in hover:bg-[#232323] active:opacity-80"
+                onClick={() => window.slideOverDetail()}
               >
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-[rgba(255,255,255,.9)]">

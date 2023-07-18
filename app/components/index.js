@@ -3,6 +3,10 @@ import Button from "./global/Button";
 import Dropdown from "./global/Dropdown";
 import Modal from "./global/Modal";
 import Datepicker from "./global/Datepicker";
+import ToastNotification from "./global/ToastNotification";
+import AlertConfirmation from "./global/AlertConfirmation";
+import ColorPicker from "./global/ColorPicker";
+import Popover from "./global/Popover";
 
 import Sidebar from "./layout/Sidebar";
 import Container from "./layout/Container";
@@ -26,6 +30,10 @@ export const Global = {
   Dropdown,
   Modal,
   Datepicker,
+  ToastNotification,
+  AlertConfirmation,
+  ColorPicker,
+  Popover,
 };
 
 export const Layout = {

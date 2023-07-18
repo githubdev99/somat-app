@@ -63,6 +63,7 @@ export default function Dropdown(props) {
                 content,
                 isInnerHTML = true,
                 isBottomLink = false,
+                onClick = {},
               } = item;
 
               return (
@@ -70,6 +71,7 @@ export default function Dropdown(props) {
                   {({ active }) => (
                     <a
                       href={url}
+                      onClick={onClick}
                       className={classNames(
                         active
                           ? "bg-[#333333] text-[#FFFFFFE6]"

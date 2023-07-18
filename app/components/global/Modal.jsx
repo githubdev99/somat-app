@@ -23,7 +23,7 @@ export default function Modal({
       "max-w-5xl": size === "5xl",
       "max-w-6xl": size === "6xl",
       "max-w-7xl": size === "7xl",
-      panelClassName: panelClassName?.length,
+      [panelClassName]: panelClassName?.length,
     }
   );
 

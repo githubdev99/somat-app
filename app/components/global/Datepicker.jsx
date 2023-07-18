@@ -2,7 +2,7 @@ import classNames from "classnames";
 import { useState } from "react";
 import DatepickerElement from "tailwind-datepicker-react";
 
-export default function Datepicker({ ...otherProps }) {
+export default function Datepicker({ inputClassName, ...otherProps }) {
   const [show, setShow] = useState(false);
   const handleChange = (selectedDate) => {
     console.log(selectedDate);
@@ -25,8 +25,7 @@ export default function Datepicker({ ...otherProps }) {
       icons: "",
       text: "",
       disabledText: "",
-      input:
-        "!bg-transparent !border-none focus:border-none focus-visible:outline-none !px-3 !py-2",
+      input: `!bg-transparent !border-none focus:border-none focus-visible:outline-none ${inputClassName}`,
       inputIcon: "!hidden",
       selected:
         "bg-white/80 !text-[rgba(0,0,0,0.9)] hover:!bg-white/50 active:!bg-slate-500",

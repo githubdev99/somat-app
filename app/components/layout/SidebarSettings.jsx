@@ -120,7 +120,7 @@ function SidebarWrapper(props) {
                     const { id, url, content } = item;
 
                     const navClasses = classNames(
-                      "my-1 flex cursor-pointer flex-row items-center gap-2 rounded-lg px-3 py-1 transition duration-150 ease-in hover:bg-[#232323] active:opacity-80",
+                      "my-1 flex cursor-pointer flex-row items-center gap-2 rounded-lg px-3 py-1 transition duration-150 ease-in hover:bg-[#232323] active:opacity-80 focus:outline-none",
                       {
                         "bg-[rgba(255,255,255,.14)] text-[#FFFFFFE6]":
                           clickedNavId === id,

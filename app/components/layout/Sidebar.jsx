@@ -9,14 +9,19 @@ import { BiLockAlt } from "react-icons/bi";
 import { CgAssign } from "react-icons/cg";
 import { RiUserAddLine } from "react-icons/ri";
 import { BsFillCaretRightFill } from "react-icons/bs";
-import { ICON_COLLAPSIBLE_ROTATE, VISIBLE } from "~/lib/animation";
+import {
+  ICON_COLLAPSIBLE_ROTATE,
+  VISIBLE,
+  VISIBLE_CUSTOM,
+} from "~/lib/animation";
 import { Fragment, useState } from "react";
 import classNames from "classnames";
 import { Dialog, Transition } from "@headlessui/react";
+import { Global } from "~/components";
+import { FaUserCircle } from "react-icons/fa";
 
 export default function Sidebar(props) {
-  const { sidebarOpen, setSidebarOpen, openTaskDetail, setOpenTaskDetail } =
-    props;
+  const { sidebarOpen, setSidebarOpen } = props;
 
   return (
     <>
@@ -65,21 +70,14 @@ export default function Sidebar(props) {
 }
 
 function SidebarWrapper(props) {
-  const {
-    data,
-    lists,
-    setSidebarOpen,
-    setOpenTaskDetail,
-    setOpenAddTaskModal,
-    setOpenAddListModal,
-  } = props;
+  const { data, lists, setSidebarOpen } = props;
   const { params } = data || {};
   const { slug } = params || {};
 
-  const [isOpenCollapsible, setIsOpenCollapsible] = useState(false);
-  const [clickedNavId, setClickedNavId] = useState(slug || "");
-
   let isAuthPage = slug && String(slug).includes("auth");
+
+  const [isOpenCollapsible, setIsOpenCollapsible] = useState(!isAuthPage);
+  const [clickedNavId, setClickedNavId] = useState(slug || "");
 
   const defaultNavs = [
     {
@@ -93,7 +91,7 @@ function SidebarWrapper(props) {
       ),
     },
     {
-      id: "default-sidenav-2",
+      id: "draft",
       url: isAuthPage ? "/app/auth" : "/app/draft",
       content: (
         <>
@@ -103,7 +101,7 @@ function SidebarWrapper(props) {
       ),
     },
     {
-      id: "default-sidenav-3",
+      id: "assigned",
       url: isAuthPage ? "/app/auth" : "/app/assigned",
       content: (
         <>
@@ -113,7 +111,7 @@ function SidebarWrapper(props) {
       ),
     },
     {
-      id: "default-sidenav-4",
+      id: "created",
       url: isAuthPage ? "/app/auth" : "/app/created",
       content: (
         <>
@@ -123,7 +121,7 @@ function SidebarWrapper(props) {
       ),
     },
     {
-      id: "default-sidenav-5",
+      id: "private",
       url: isAuthPage ? "/app/auth" : "/app/private",
       content: (
         <>
@@ -133,7 +131,7 @@ function SidebarWrapper(props) {
       ),
     },
     {
-      id: "default-sidenav-6",
+      id: "trash",
       url: isAuthPage ? "/app/auth" : "/app/trash",
       content: (
         <>
@@ -144,23 +142,61 @@ function SidebarWrapper(props) {
     },
   ];
 
+  const itemWorkspaceClasses =
+    "py-2 px-3 border rounded-lg border-[rgba(255,255,255,.14)] hover:bg-[rgba(255,255,255,.07)] transition duration-200 ease-in cursor-pointer flex gap-1.5 items-center";
+
+  const linkPopoverNavClasses =
+    "cursor-pointer hover:bg-[rgba(18,18,18,1)] transition duration-200 ease-in p-1 rounded-md";
+
   return (
     <>
       <div className="flex grow flex-col gap-y-2 overflow-y-auto border-r border-r-[rgba(255,255,255,.1)] bg-[rgba(18,18,18,1)] px-4 text-[14px] font-normal not-italic text-[#ACACAC]">
         <div className="h-13 -mx-2 flex items-center pt-2">
-          <div className="group flex w-full cursor-pointer flex-row items-center rounded-lg transition duration-200 ease-in hover:bg-[#232323]">
-            <div className="flex-1 px-3 py-1">
-              {isAuthPage ? "My Workspace" : "Local Team"}
-            </div>
-            <div className="border-1 px-2 py-1 group-hover:border-l-[1px] group-hover:border-[#393939] lg:hidden lg:border-0">
-              <div
-                className="cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141]"
-                onClick={() => setSidebarOpen && setSidebarOpen(false)}
-              >
-                <TbLayoutSidebarLeftCollapse size={18} />
+          <Global.Popover
+            trigger={
+              <div className="group flex w-full cursor-pointer flex-row items-center rounded-lg transition duration-200 ease-in hover:bg-[#232323]">
+                <div className="flex-1 px-3 py-1">Local Team</div>
+                <div className="border-1 px-2 py-1 group-hover:border-l-[1px] group-hover:border-[#393939] lg:hidden lg:border-0">
+                  <div
+                    className="cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141]"
+                    onClick={() => setSidebarOpen && setSidebarOpen(false)}
+                  >
+                    <TbLayoutSidebarLeftCollapse size={18} />
+                  </div>
+                </div>
+              </div>
+            }
+            triggerClassName="flex items-center w-full text-left focus:outline-none"
+            positionPanelClassName="top-0 w-full"
+            className="bg-[#242424]"
+          >
+            <div className="bg-[#242424] p-2">
+              <div className="mb-2 text-xs text-[rgba(255,255,255,0.64)]">
+                Workspaces
+              </div>
+              <div className={itemWorkspaceClasses}>
+                <div>
+                  <FaUserCircle
+                    className="h-[22px] w-[22px]"
+                    aria-hidden="true"
+                  />
+                </div>
+                <div>My Workspace</div>
               </div>
             </div>
-          </div>
+            <div className="flex flex-col bg-[rgba(255,255,255,.14)] py-2 pl-4 pr-5 text-xs text-[rgba(255,255,255,0.64)]">
+              <Link to={"/settings/profile"} className={linkPopoverNavClasses}>
+                Settings
+              </Link>
+              <span
+                className={linkPopoverNavClasses}
+                onClick={() => window.addWorkspaceModal()}
+              >
+                Create workspace
+              </span>
+              <span className={linkPopoverNavClasses}>Logout</span>
+            </div>
+          </Global.Popover>
         </div>
         <nav className="flex flex-1 flex-col">
           <ul className="flex flex-1 flex-col gap-y-2">
@@ -170,7 +206,7 @@ function SidebarWrapper(props) {
                   const { id, url, content } = item;
 
                   const navClasses = classNames(
-                    "my-1 flex cursor-pointer flex-row items-center gap-2 rounded-lg px-3 py-1 transition duration-150 ease-in hover:bg-[#232323] active:opacity-80",
+                    "my-1 flex cursor-pointer flex-row items-center gap-2 rounded-lg px-3 py-1 transition duration-150 ease-in hover:bg-[#232323] active:opacity-80 focus:outline-none",
                     {
                       "bg-[rgba(255,255,255,.14)] text-[#FFFFFFE6]":
                         clickedNavId === id,
@@ -206,15 +242,10 @@ function SidebarWrapper(props) {
                 </motion.span>
                 Lists
               </div>
-              {isOpenCollapsible && (
-                <motion.ul
-                  initial="hidden"
-                  animate={isOpenCollapsible ? "visible" : "hidden"}
-                  variants={VISIBLE}
-                  className="-mx-2 space-y-1"
-                >
+              {isOpenCollapsible && Boolean(lists?.length) ? (
+                <ul className="-mx-2 space-y-1">
                   {lists.map((item, index) => {
-                    const { icon, hexColor, name } = item;
+                    const { icon, hexColor, url, name } = item;
 
                     let id = `list-nav-${index}`;
 
@@ -227,28 +258,30 @@ function SidebarWrapper(props) {
                     );
 
                     return (
-                      <li
-                        className={listNavClasses}
-                        key={index}
-                        onClick={() => setClickedNavId(id)}
-                      >
-                        <div
-                          className="c-list-icon cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141] active:opacity-80"
-                          dangerouslySetInnerHTML={{ __html: icon }}
-                        ></div>
-                        {name}
+                      <li key={index}>
+                        <Link
+                          to={url}
+                          className={listNavClasses}
+                          onClick={() => setClickedNavId(id)}
+                        >
+                          <div
+                            className="c-list-icon cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141] active:opacity-80"
+                            dangerouslySetInnerHTML={{ __html: icon }}
+                          ></div>
+                          {name}
+                        </Link>
                       </li>
                     );
                   })}
-                </motion.ul>
-              )}
+                </ul>
+              ) : null}
             </li>
             <li>
               <ul className="-mx-2 space-y-1">
                 <li>
                   <div
-                    className="my-1 flex cursor-pointer flex-row items-center gap-2 rounded-lg px-3 py-1 transition duration-150 ease-in hover:bg-[#232323] active:opacity-80"
-                    onClick={() => setOpenAddListModal(true)}
+                    className="my-1 flex cursor-pointer flex-row items-center gap-2 rounded-lg px-3 py-1 transition duration-150 ease-in hover:bg-[#232323] focus:outline-none active:opacity-80"
+                    onClick={() => window.addListModal()}
                   >
                     <AiOutlinePlus size={18} />
                     New List
@@ -266,7 +299,7 @@ function SidebarWrapper(props) {
                 </Link>
                 <div
                   className="inline-block cursor-pointer rounded-full bg-[#232323] px-4 py-1 text-[rgba(255,255,255,.9)] transition duration-200 ease-in hover:bg-[#404040] active:bg-slate-500"
-                  onClick={() => setOpenAddTaskModal(true)}
+                  onClick={() => window.addTaskModal()}
                 >
                   <MdOutlineAddBox size={18} />
                 </div>

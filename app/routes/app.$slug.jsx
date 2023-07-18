@@ -1,12 +1,13 @@
 import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import { useState } from "react";
-import { Global, Layout } from "~/components";
+import { Link, useLoaderData } from "@remix-run/react";
+import { useEffect, useState } from "react";
+import { Global, Layout, Task } from "~/components";
 import { HiOutlineArrowLeft } from "react-icons/hi";
 import { RxCross2 } from "react-icons/rx";
 import { Dialog } from "@headlessui/react";
-import { MdOutlineAddBox } from "react-icons/md";
 import { AiOutlinePlus } from "react-icons/ai";
+import { GoPencil } from "react-icons/go";
+import * as Form from "@radix-ui/react-form";
 
 export const meta = () => [{ title: "Somat App" }];
 
@@ -23,6 +24,7 @@ export default function Index() {
   const [authComponent, setAuthComponent] = useState("auth");
   const [openAddTaskModal, setOpenAddTaskModal] = useState(false);
   const [openAddListModal, setOpenAddListModal] = useState(false);
+  const [openAddWorkspaceModal, setOpenAddWorkspaceModal] = useState(false);
 
   const components = {
     auth: <AuthComponent setComponent={setAuthComponent} />,
@@ -31,6 +33,20 @@ export default function Index() {
   };
 
   let isAuthPage = slug && String(slug).includes("auth");
+
+  useEffect(() => {
+    window.addTaskModal = () => {
+      setOpenAddTaskModal(true);
+    };
+
+    window.addListModal = () => {
+      setOpenAddListModal(true);
+    };
+
+    window.addWorkspaceModal = () => {
+      setOpenAddWorkspaceModal(true);
+    };
+  }, []);
 
   return (
     <>
@@ -49,9 +65,9 @@ export default function Index() {
           <Global.Modal
             open={openAddTaskModal}
             setOpen={setOpenAddTaskModal}
+            size="custom"
             positionClassName="inset-x-0 top-3"
-            className="max-w-"
-            size="3xl"
+            panelClassName="max-w-[800px]"
           >
             <div className="flex h-full flex-col gap-3 rounded-lg border border-[#323232] bg-[#121212] py-3 shadow-2xl">
               <div className="px-4 sm:px-5">
@@ -169,8 +185,10 @@ export default function Index() {
                         </td>
                         <td className="h-[31px] w-[120px] pl-2">Created At</td>
                         <td className="text-[#EAEAEA]">
-                          <div className="min-h-[25px] w-full px-3 py-0.5">
-                            <span className="px-1">Fri, May 19, 2023</span>
+                          <div className="min-h-[25px] w-full rounded-lg text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141]">
+                            <div className="px-1">
+                              <Global.Datepicker inputClassName="!px-3 !py-0.5" />
+                            </div>
                           </div>
                         </td>
                       </tr>
@@ -235,11 +253,7 @@ export default function Index() {
                             items={[
                               {
                                 url: "#",
-                                content: "Skripsi",
-                              },
-                              {
-                                url: "#",
-                                content: "Paper Tiger",
+                                content: "ShopCommerce",
                               },
                             ]}
                             fullWidth={true}
@@ -330,7 +344,7 @@ export default function Index() {
                                 url: "#",
                                 content: (
                                   <span style={{ color: "#08c408" }}>
-                                    BAB 1
+                                    PHASE 1
                                   </span>
                                 ),
                                 isInnerHTML: false,
@@ -339,7 +353,7 @@ export default function Index() {
                                 url: "#",
                                 content: (
                                   <span style={{ color: "#725cff" }}>
-                                    BAB 2
+                                    PHASE 2
                                   </span>
                                 ),
                                 isInnerHTML: false,
@@ -348,7 +362,7 @@ export default function Index() {
                                 url: "#",
                                 content: (
                                   <span style={{ color: "#1f96ff" }}>
-                                    BAB 3
+                                    PHASE 3
                                   </span>
                                 ),
                                 isInnerHTML: false,
@@ -357,7 +371,7 @@ export default function Index() {
                                 url: "#",
                                 content: (
                                   <span style={{ color: "#ff2eb9" }}>
-                                    BAB 4
+                                    PHASE 4
                                   </span>
                                 ),
                                 isInnerHTML: false,
@@ -376,7 +390,7 @@ export default function Index() {
                             menuButtonClassName="min-h-[25px]"
                           >
                             <span className="px-1" style={{ color: "#08c408" }}>
-                              BAB 1
+                              PHASE 1
                             </span>
                           </Global.Dropdown>
                         </td>
@@ -418,13 +432,24 @@ export default function Index() {
                 >
                   <RxCross2 /> Cancel
                 </Global.Button>
-                <Global.Button
-                  type="button"
-                  color="outlined-secondary"
-                  size="sm"
-                >
-                  <AiOutlinePlus /> Create
-                </Global.Button>
+                <div className="flex gap-2">
+                  <Global.Button
+                    type="button"
+                    color="light"
+                    size="sm"
+                    onClick={() => setOpenAddTaskModal(false)}
+                  >
+                    <GoPencil /> Save to draft
+                  </Global.Button>
+                  <Global.Button
+                    type="button"
+                    color="success"
+                    size="sm"
+                    onClick={() => setOpenAddTaskModal(false)}
+                  >
+                    <AiOutlinePlus /> Create
+                  </Global.Button>
+                </div>
               </div>
             </div>
           </Global.Modal>
@@ -435,28 +460,42 @@ export default function Index() {
             size="sm"
           >
             <div className="px-5 py-3">
-              <div className="mb-2 text-[rgba(255,255,255,.9)]">
+              <div className="mb-4 text-[rgba(255,255,255,.9)]">
                 Create new list
               </div>
               <div className="mb-2">
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  className="block w-full rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-[rgba(255,255,255,.4)] hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
-                  placeholder=""
-                />
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-normal leading-6"
+                >
+                  Name
+                </label>
+                <div className="mt-1">
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    autoComplete="name"
+                    className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+                  />
+                </div>
               </div>
               <div className="mb-2">
-                <input
-                  id="description"
-                  name="description"
-                  type="text"
-                  autoComplete="description"
-                  className="block w-full rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-[rgba(255,255,255,.4)] hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
-                  placeholder=""
-                />
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-normal leading-6"
+                >
+                  Description
+                </label>
+                <div className="mt-1">
+                  <input
+                    id="description"
+                    name="description"
+                    type="text"
+                    autoComplete="description"
+                    className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+                  />
+                </div>
               </div>
             </div>
             <div className="border-t border-t-[rgba(255,255,255,.1)] px-5 py-3">
@@ -471,16 +510,73 @@ export default function Index() {
                 </Global.Button>
                 <Global.Button
                   type="button"
-                  color="outlined-secondary"
+                  color="success"
                   size="sm"
+                  onClick={() => {
+                    window.showToastNotification();
+                  }}
                 >
                   <AiOutlinePlus /> Create
                 </Global.Button>
               </div>
             </div>
           </Global.Modal>
+          <Global.Modal
+            open={openAddWorkspaceModal}
+            setOpen={setOpenAddWorkspaceModal}
+            positionClassName="inset-x-0 top-3"
+            size="sm"
+          >
+            <div className="px-5 py-3">
+              <div className="mb-4 text-[rgba(255,255,255,.9)]">
+                Create new workspace
+              </div>
+              <div>
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-normal leading-6"
+                >
+                  Name
+                </label>
+                <div className="mt-1">
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    autoComplete="name"
+                    className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="border-t border-t-[rgba(255,255,255,.1)] px-5 py-3">
+              <div className="flex justify-between">
+                <Global.Button
+                  type="button"
+                  color="danger"
+                  size="sm"
+                  onClick={() => setOpenAddWorkspaceModal(false)}
+                >
+                  <RxCross2 /> Cancel
+                </Global.Button>
+                <Global.Button
+                  type="button"
+                  color="success"
+                  size="sm"
+                  onClick={() => {
+                    window.showToastNotification();
+                  }}
+                >
+                  <AiOutlinePlus /> Create
+                </Global.Button>
+              </div>
+            </div>
+          </Global.Modal>
+          <Task.SlideOverDetail />
         </>
       )}
+      <Global.ToastNotification />
+      <Global.AlertConfirmation />
       <Layout.Container>
         <Layout.Sidebar
           data={data}
@@ -490,12 +586,8 @@ export default function Index() {
                 {
                   icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M181.3 32.4c17.4 2.9 29.2 19.4 26.3 36.8L197.8 128h95.1l11.5-69.3c2.9-17.4 19.4-29.2 36.8-26.3s29.2 19.4 26.3 36.8L357.8 128H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H347.1L325.8 320H384c17.7 0 32 14.3 32 32s-14.3 32-32 32H315.1l-11.5 69.3c-2.9 17.4-19.4 29.2-36.8 26.3s-29.2-19.4-26.3-36.8l9.8-58.7H155.1l-11.5 69.3c-2.9 17.4-19.4 29.2-36.8 26.3s-29.2-19.4-26.3-36.8L90.2 384H32c-17.7 0-32-14.3-32-32s14.3-32 32-32h68.9l21.3-128H64c-17.7 0-32-14.3-32-32s14.3-32 32-32h68.9l11.5-69.3c2.9-17.4 19.4-29.2 36.8-26.3zM187.1 192L165.8 320h95.1l21.3-128H187.1z"/></svg>`,
                   hexColor: "#EBB537",
-                  name: "skripsi",
-                },
-                {
-                  icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M181.3 32.4c17.4 2.9 29.2 19.4 26.3 36.8L197.8 128h95.1l11.5-69.3c2.9-17.4 19.4-29.2 36.8-26.3s29.2 19.4 26.3 36.8L357.8 128H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H347.1L325.8 320H384c17.7 0 32 14.3 32 32s-14.3 32-32 32H315.1l-11.5 69.3c-2.9 17.4-19.4 29.2-36.8 26.3s-29.2-19.4-26.3-36.8l9.8-58.7H155.1l-11.5 69.3c-2.9 17.4-19.4 29.2-36.8 26.3s-29.2-19.4-26.3-36.8L90.2 384H32c-17.7 0-32-14.3-32-32s14.3-32 32-32h68.9l21.3-128H64c-17.7 0-32-14.3-32-32s14.3-32 32-32h68.9l11.5-69.3c2.9-17.4 19.4-29.2 36.8-26.3zM187.1 192L165.8 320h95.1l21.3-128H187.1z"/></svg>`,
-                  hexColor: "",
-                  name: "papertiger",
+                  url: "/app/shopcommerce",
+                  name: "ShopCommerce",
                 },
               ],
             })}
@@ -608,9 +700,16 @@ const LoginComponent = (props) => {
             />
           </div>
         </div>
-        <Global.Button type="button" color="light" size="sm" className="w-full">
-          Log in
-        </Global.Button>
+        <Link to="/app/shopcommerce">
+          <Global.Button
+            type="button"
+            color="light"
+            size="sm"
+            className="w-full"
+          >
+            Log in
+          </Global.Button>
+        </Link>
       </div>
     </div>
   );
@@ -618,97 +717,138 @@ const LoginComponent = (props) => {
 
 const SignupComponent = (props) => {
   return (
-    <div>
+    <Form.Root>
       <BackAuthComponent {...props} headerText="Sign up page" />
       <div className="bg-[#242424] px-8 py-5">
-        <div className="mb-2">
-          <label
-            htmlFor="firstname"
-            className="block text-sm font-normal leading-6"
-          >
-            Firstname
-          </label>
-          <div className="mt-1">
-            <input
-              id="firstname"
-              name="firstname"
-              type="text"
-              autoComplete="firstname"
-              className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
-            />
+        <Form.Field name="firstname">
+          <div className="mb-2">
+            <label
+              htmlFor="firstname"
+              className="block text-sm font-normal leading-6"
+            >
+              Firstname
+            </label>
+            <div className="mt-1">
+              <Form.Control asChild>
+                <input
+                  id="firstname"
+                  type="text"
+                  autoComplete="firstname"
+                  className="mb-1 block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+                  required
+                />
+              </Form.Control>
+              <Form.Message match="valueMissing" className="text-red-400">
+                Please enter a firstname
+              </Form.Message>
+            </div>
           </div>
-        </div>
-        <div className="mb-2">
-          <label
-            htmlFor="lastname"
-            className="block text-sm font-normal leading-6"
-          >
-            Lastname
-          </label>
-          <div className="mt-1">
-            <input
-              id="lastname"
-              name="lastname"
-              type="text"
-              autoComplete="lastname"
-              className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
-            />
+        </Form.Field>
+        <Form.Field name="lastname">
+          <div className="mb-2">
+            <label
+              htmlFor="lastname"
+              className="block text-sm font-normal leading-6"
+            >
+              Lastname
+            </label>
+            <div className="mt-1">
+              <Form.Control asChild>
+                <input
+                  id="lastname"
+                  type="text"
+                  autoComplete="lastname"
+                  className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+                />
+              </Form.Control>
+            </div>
           </div>
-        </div>
-        <div className="mb-2">
-          <label
-            htmlFor="email"
-            className="block text-sm font-normal leading-6"
-          >
-            Email
-          </label>
-          <div className="mt-1">
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
-            />
+        </Form.Field>
+        <Form.Field name="email">
+          <div className="mb-2">
+            <label
+              htmlFor="email"
+              className="block text-sm font-normal leading-6"
+            >
+              Email
+            </label>
+            <div className="mt-1">
+              <Form.Control asChild>
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  className="mb-1 block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+                  required
+                />
+              </Form.Control>
+              <Form.Message match="valueMissing" className="text-red-400">
+                Please enter an email
+              </Form.Message>
+              <Form.Message match="typeMismatch" className="text-red-400">
+                Please provide a valid email
+              </Form.Message>
+            </div>
           </div>
-        </div>
-        <div className="mb-2">
-          <label
-            htmlFor="password"
-            className="block text-sm font-normal leading-6"
-          >
-            Password
-          </label>
-          <div className="mt-1">
-            <input
-              id="password"
-              name="password"
-              type="password"
-              className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
-            />
+        </Form.Field>
+        <Form.Field name="password">
+          <div className="mb-2">
+            <label
+              htmlFor="password"
+              className="block text-sm font-normal leading-6"
+            >
+              Password
+            </label>
+            <div className="mt-1">
+              <Form.Control asChild>
+                <input
+                  id="password"
+                  type="password"
+                  className="mb-1 block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+                  required
+                />
+              </Form.Control>
+              <Form.Message match="valueMissing" className="text-red-400">
+                Please enter a password
+              </Form.Message>
+            </div>
           </div>
-        </div>
-        <div className="mb-4">
-          <label
-            htmlFor="confirm_password"
-            className="block text-sm font-normal leading-6"
-          >
-            Confirm Password
-          </label>
-          <div className="mt-1">
-            <input
-              id="confirm_password"
-              name="confirm_password"
-              type="password"
-              className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
-            />
+        </Form.Field>
+        <Form.Field name="confirm_password">
+          <div className="mb-4">
+            <label
+              htmlFor="confirm_password"
+              className="block text-sm font-normal leading-6"
+            >
+              Confirm Password
+            </label>
+            <div className="mt-1">
+              <Form.Control asChild>
+                <input
+                  id="confirm_password"
+                  type="password"
+                  className="mb-1 block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+                  required
+                />
+              </Form.Control>
+              <Form.Message match="valueMissing" className="text-red-400">
+                Please enter a confirm password
+              </Form.Message>
+            </div>
           </div>
-        </div>
-        <Global.Button type="button" color="light" size="sm" className="w-full">
-          Log in
-        </Global.Button>
+        </Form.Field>
+        <Link to="/app/auth">
+          <Global.Button
+            type="button"
+            color="light"
+            size="sm"
+            className="w-full"
+          >
+            Sign up
+          </Global.Button>
+        </Link>
       </div>
-    </div>
+    </Form.Root>
   );
 };
 
