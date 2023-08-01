@@ -17,11 +17,15 @@ export const hexToRgba = (hex, opacity = "1") => {
   throw new Error("Bad Hex");
 };
 
-export const convertDate = (date) => {
-  return date.toLocaleDateString("en-US", {
-    weekday: "long",
+export const convertDate = (
+  date,
+  options = {
+    timeZone: "Asia/Jakarta",
     year: "numeric",
     month: "long",
     day: "numeric",
-  });
+    weekday: "long",
+  }
+) => {
+  return date.toLocaleString("en-US", options);
 };

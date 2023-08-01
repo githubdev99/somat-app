@@ -395,3 +395,61 @@ export const deleteList = async (id, token) => {
     .then((result) => result)
     .catch((error) => error);
 };
+
+export const inviteWorkspace = async (payload, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Content-Type", "application/json");
+  myHeaders.append("Authorization", token);
+
+  var raw = JSON.stringify(payload);
+
+  var requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: raw,
+    redirect: "follow",
+  };
+
+  return await fetch(`${window.ENV.API_URL}/workspace/invite`, requestOptions)
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};
+
+export const getAllInviteWorkspace = async (workspace_id, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Authorization", token);
+
+  var requestOptions = {
+    method: "GET",
+    headers: myHeaders,
+    redirect: "follow",
+  };
+
+  return await fetch(
+    `${window.ENV.API_URL}/workspace/invite/${workspace_id}`,
+    requestOptions
+  )
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};
+
+export const getAllUsersWorkspace = async (workspace_id, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Authorization", token);
+
+  var requestOptions = {
+    method: "GET",
+    headers: myHeaders,
+    redirect: "follow",
+  };
+
+  return await fetch(
+    `${window.ENV.API_URL}/workspace/users/${workspace_id}`,
+    requestOptions
+  )
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};

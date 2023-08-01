@@ -124,20 +124,22 @@ export default function General() {
               ) : (
                 <BsPersonWorkspace className="h-[120px] w-[120px] rounded-full" />
               )}
-              <label htmlFor="file-upload">
-                <span className="flex cursor-pointer items-center justify-center gap-2 rounded-lg px-2 py-1 text-sm font-normal text-[rgba(255,255,255,.64)] shadow-sm ring-1 ring-inset ring-[#414141] transition  duration-200 ease-in hover:bg-[#414141] focus:outline-none active:bg-slate-500 active:opacity-80 active:ring-slate-500">
-                  Upload
-                </span>
-                <input
-                  ref={inputFileRef}
-                  id="file-upload"
-                  name="file-upload"
-                  type="file"
-                  className="sr-only"
-                  onChange={handleChangeProfileImage}
-                  accept="image/*"
-                />
-              </label>
+              {is_owner && (
+                <label htmlFor="file-upload">
+                  <span className="flex cursor-pointer items-center justify-center gap-2 rounded-lg px-2 py-1 text-sm font-normal text-[rgba(255,255,255,.64)] shadow-sm ring-1 ring-inset ring-[#414141] transition  duration-200 ease-in hover:bg-[#414141] focus:outline-none active:bg-slate-500 active:opacity-80 active:ring-slate-500">
+                    Upload
+                  </span>
+                  <input
+                    ref={inputFileRef}
+                    id="file-upload"
+                    name="file-upload"
+                    type="file"
+                    className="sr-only"
+                    onChange={handleChangeProfileImage}
+                    accept="image/*"
+                  />
+                </label>
+              )}
               {profileImage && (
                 <Global.Button
                   type="button"

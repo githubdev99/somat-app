@@ -71,7 +71,9 @@ export default function App() {
   const handleDataProfile = async () => {
     const response = await getProfile(localStorage.getItem("token"));
 
-    if (response?.status?.code !== 200) {
+    if (response?.status?.code !== 200) return;
+
+    if (!localStorage.getItem("token")) {
       handleLogout();
       return;
     }
@@ -131,14 +133,14 @@ export default function App() {
     if (!localStorage.getItem("token")) {
       navigate("/app/auth");
       return;
+    } else {
+      if (location.pathname === "/app/auth") navigate(`/app/assigned`);
     }
 
     handleDataProfile();
     handleDataWorkspace();
     handleDataList(localStorage.getItem("selectedWorkspaceId"));
     handleSelectedWorkspace(localStorage.getItem("selectedWorkspaceId"));
-
-    if (location.pathname === "/app/auth") navigate(`/app/assigned`);
   }, [token]);
 
   useEffect(() => {
