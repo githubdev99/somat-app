@@ -1,4 +1,4 @@
-import { Link } from "@remix-run/react";
+import { Link, useNavigate } from "@remix-run/react";
 import { Global } from "~/components";
 
 export const meta = () => [
@@ -8,6 +8,8 @@ export const meta = () => [
 ];
 
 export default function Index() {
+  const navigate = useNavigate();
+
   return (
     <main className="grid min-h-full place-items-center bg-[#242424] px-6 py-24 text-[#ACACAC] sm:py-32 lg:px-8">
       <div className="text-center">
@@ -21,11 +23,17 @@ export default function Index() {
           Sorry, we couldn't find the page you're looking for.
         </p>
         <div className="mt-5 flex items-center justify-center gap-x-6">
-          <Link to="/app/test">
+          <span
+            onClick={() =>
+              !localStorage.getItem("token")
+                ? navigate("/app/auth")
+                : navigate(`/app/assigned`)
+            }
+          >
             <Global.Button type="button" color="outlined-secondary" size="sm">
               Go back home
             </Global.Button>
-          </Link>
+          </span>
         </div>
       </div>
     </main>

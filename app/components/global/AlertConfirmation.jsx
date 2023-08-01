@@ -1,15 +1,50 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import classNames from "classnames";
 
 export default function AlertConfirmation() {
   const [open, setOpen] = useState(false);
+  const [iconClasses, setIconClasses] = useState("");
+  const [buttonSubmitClasses, setButtonSubmitClasses] = useState("");
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
+  const [handleFunctions, setHandleFunctions] = useState({
+    onSubmit: () => {},
+  });
 
   const cancelButtonRef = useRef(null);
 
   useEffect(() => {
-    window.showAlertConfirmation = () => {
+    window.showAlertConfirmation = ({
+      color = "default",
+      title,
+      message,
+      onSubmit,
+    }) => {
       setOpen(true);
+      setIconClasses(
+        classNames("h-6 w-6", {
+          "text-red-600": color === "danger" || color === "default",
+          "text-green-600": color === "success",
+        })
+      );
+      setButtonSubmitClasses(
+        classNames(
+          "inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto",
+          {
+            "bg-red-600 hover:bg-red-500": color === "danger",
+            "bg-green-600 hover:bg-green-500": color === "success",
+            "bg-[rgba(36,36,36,1)] hover:bg-[rgba(54,54,54,1)]":
+              color === "default",
+          }
+        )
+      );
+      setTitle(title);
+      setMessage(message);
+      setHandleFunctions({
+        onSubmit: onSubmit,
+      });
     };
   }, []);
 
@@ -30,7 +65,7 @@ export default function AlertConfirmation() {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          <div className="fixed inset-0 bg-[#090909] bg-opacity-75 transition-opacity" />
         </Transition.Child>
 
         <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -49,7 +84,7 @@ export default function AlertConfirmation() {
                   <div className="sm:flex sm:items-start">
                     <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
                       <ExclamationTriangleIcon
-                        className="h-6 w-6 text-red-600"
+                        className={iconClasses}
                         aria-hidden="true"
                       />
                     </div>
@@ -58,14 +93,10 @@ export default function AlertConfirmation() {
                         as="h3"
                         className="text-base font-semibold leading-6 text-gray-900"
                       >
-                        Deactivate account
+                        {title}
                       </Dialog.Title>
                       <div className="mt-2">
-                        <p className="text-sm text-gray-500">
-                          Are you sure you want to deactivate your account? All
-                          of your data will be permanently removed. This action
-                          cannot be undone.
-                        </p>
+                        <p className="text-sm text-gray-500">{message}</p>
                       </div>
                     </div>
                   </div>
@@ -73,10 +104,13 @@ export default function AlertConfirmation() {
                 <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                   <button
                     type="button"
-                    className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
-                    onClick={() => setOpen(false)}
+                    className={buttonSubmitClasses}
+                    onClick={() => {
+                      handleFunctions.onSubmit();
+                      setOpen(false);
+                    }}
                   >
-                    Deactivate
+                    Submit
                   </button>
                   <button
                     type="button"

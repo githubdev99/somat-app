@@ -14,7 +14,7 @@ import {
   VISIBLE,
   VISIBLE_CUSTOM,
 } from "~/lib/animation";
-import { Fragment, useState } from "react";
+import { Fragment, useContext, useEffect, useState } from "react";
 import classNames from "classnames";
 import { Dialog, Transition } from "@headlessui/react";
 import { Global } from "~/components";
@@ -70,6 +70,17 @@ export default function Sidebar(props) {
 }
 
 function SidebarWrapper(props) {
+  const {
+    handleLogout,
+    dataWorkspace,
+    dataWorkspaceSelected,
+    selectedWorkspaceId,
+    setSelectedWorkspaceId,
+  } = useContext(Global.RootContext);
+
+  const { id: workspaceSelectedId, name: workspaceSelectedName } =
+    dataWorkspaceSelected || {};
+
   const { data, lists, setSidebarOpen } = props;
   const { params } = data || {};
   const { slug } = params || {};
@@ -78,6 +89,15 @@ function SidebarWrapper(props) {
 
   const [isOpenCollapsible, setIsOpenCollapsible] = useState(!isAuthPage);
   const [clickedNavId, setClickedNavId] = useState(slug || "");
+  const [isWorkspaceSelectedChanged, setIsWorkspaceSelectedChanged] =
+    useState(false);
+
+  useEffect(() => {
+    setIsWorkspaceSelectedChanged(true);
+    setTimeout(() => {
+      setIsWorkspaceSelectedChanged(false);
+    }, 1);
+  }, [dataWorkspaceSelected]);
 
   const defaultNavs = [
     {
@@ -142,9 +162,6 @@ function SidebarWrapper(props) {
     },
   ];
 
-  const itemWorkspaceClasses =
-    "py-2 px-3 border rounded-lg border-[rgba(255,255,255,.14)] hover:bg-[rgba(255,255,255,.07)] transition duration-200 ease-in cursor-pointer flex gap-1.5 items-center";
-
   const linkPopoverNavClasses =
     "cursor-pointer hover:bg-[rgba(18,18,18,1)] transition duration-200 ease-in p-1 rounded-md";
 
@@ -152,51 +169,85 @@ function SidebarWrapper(props) {
     <>
       <div className="flex grow flex-col gap-y-2 overflow-y-auto border-r border-r-[rgba(255,255,255,.1)] bg-[rgba(18,18,18,1)] px-4 text-[14px] font-normal not-italic text-[#ACACAC]">
         <div className="h-13 -mx-2 flex items-center pt-2">
-          <Global.Popover
-            trigger={
-              <div className="group flex w-full cursor-pointer flex-row items-center rounded-lg transition duration-200 ease-in hover:bg-[#232323]">
-                <div className="flex-1 px-3 py-1">Local Team</div>
-                <div className="border-1 px-2 py-1 group-hover:border-l-[1px] group-hover:border-[#393939] lg:hidden lg:border-0">
-                  <div
-                    className="cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141]"
-                    onClick={() => setSidebarOpen && setSidebarOpen(false)}
-                  >
-                    <TbLayoutSidebarLeftCollapse size={18} />
+          {!isWorkspaceSelectedChanged && (
+            <Global.Popover
+              trigger={
+                <div className="group flex w-full cursor-pointer flex-row items-center rounded-lg transition duration-200 ease-in hover:bg-[#232323]">
+                  <div className="flex-1 px-3 py-1">
+                    {workspaceSelectedName}
+                  </div>
+                  <div className="border-1 px-2 py-1 group-hover:border-l-[1px] group-hover:border-[#393939] lg:hidden lg:border-0">
+                    <div
+                      className="cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141]"
+                      onClick={() => setSidebarOpen && setSidebarOpen(false)}
+                    >
+                      <TbLayoutSidebarLeftCollapse size={18} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            }
-            triggerClassName="flex items-center w-full text-left focus:outline-none"
-            positionPanelClassName="top-0 w-full"
-            className="bg-[#242424]"
-          >
-            <div className="bg-[#242424] p-2">
-              <div className="mb-2 text-xs text-[rgba(255,255,255,0.64)]">
-                Workspaces
-              </div>
-              <div className={itemWorkspaceClasses}>
-                <div>
-                  <FaUserCircle
-                    className="h-[22px] w-[22px]"
-                    aria-hidden="true"
-                  />
+              }
+              triggerClassName="flex items-center w-full text-left focus:outline-none"
+              positionPanelClassName="top-0 w-full"
+              className="bg-[#242424]"
+            >
+              <div className="bg-[#242424] p-2">
+                <div className="mb-2 text-xs text-[rgba(255,255,255,0.64)]">
+                  Workspaces
                 </div>
-                <div>My Workspace</div>
+                {dataWorkspace?.map((workspace, index) => {
+                  const { id, name, profile_image } = workspace;
+
+                  const itemWorkspaceClasses = classNames(
+                    "py-2 px-3 border rounded-lg border-[rgba(255,255,255,.14)] hover:bg-[rgba(255,255,255,.07)] transition duration-200 ease-in cursor-pointer flex gap-1.5 items-center mt-2",
+                    {
+                      "bg-[rgba(255,255,255,.07)]": id == workspaceSelectedId,
+                    }
+                  );
+
+                  return (
+                    <div
+                      className={itemWorkspaceClasses}
+                      key={index}
+                      onClick={() => setSelectedWorkspaceId(id)}
+                    >
+                      <div>
+                        {profile_image ? (
+                          <img
+                            className="h-[22px] w-[22px]"
+                            src={profile_image}
+                            alt=""
+                          />
+                        ) : (
+                          <FaUserCircle
+                            className="h-[22px] w-[22px]"
+                            aria-hidden="true"
+                          />
+                        )}
+                      </div>
+                      <div>{name}</div>
+                    </div>
+                  );
+                })}
               </div>
-            </div>
-            <div className="flex flex-col bg-[rgba(255,255,255,.14)] py-2 pl-4 pr-5 text-xs text-[rgba(255,255,255,0.64)]">
-              <Link to={"/settings/profile"} className={linkPopoverNavClasses}>
-                Settings
-              </Link>
-              <span
-                className={linkPopoverNavClasses}
-                onClick={() => window.addWorkspaceModal()}
-              >
-                Create workspace
-              </span>
-              <span className={linkPopoverNavClasses}>Logout</span>
-            </div>
-          </Global.Popover>
+              <div className="flex flex-col bg-[rgba(255,255,255,.14)] py-2 pl-4 pr-5 text-xs text-[rgba(255,255,255,0.64)]">
+                <Link
+                  to={"/settings/profile"}
+                  className={linkPopoverNavClasses}
+                >
+                  Settings
+                </Link>
+                <span
+                  className={linkPopoverNavClasses}
+                  onClick={() => window.addWorkspaceModal()}
+                >
+                  Create workspace
+                </span>
+                <span className={linkPopoverNavClasses} onClick={handleLogout}>
+                  Logout
+                </span>
+              </div>
+            </Global.Popover>
+          )}
         </div>
         <nav className="flex flex-1 flex-col">
           <ul className="flex flex-1 flex-col gap-y-2">

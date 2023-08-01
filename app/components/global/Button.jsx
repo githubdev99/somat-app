@@ -53,7 +53,7 @@ export default function Button({
       );
     default:
       return (
-        <button className={classes} {...otherProps}>
+        <button className={classes} type={type} {...otherProps}>
           {children}
         </button>
       );

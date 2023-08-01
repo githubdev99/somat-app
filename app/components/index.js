@@ -1,3 +1,5 @@
+import { createContext } from "react";
+
 import Badge from "./global/Badge";
 import Button from "./global/Button";
 import Dropdown from "./global/Dropdown";
@@ -24,6 +26,8 @@ import General from "./settings/General";
 import Users from "./settings/Users";
 import Attributes from "./settings/Attributes";
 
+const RootContext = createContext({});
+
 export const Global = {
   Badge,
   Button,
@@ -34,6 +38,7 @@ export const Global = {
   AlertConfirmation,
   ColorPicker,
   Popover,
+  RootContext,
 };
 
 export const Layout = {

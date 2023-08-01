@@ -1,17 +1,41 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { Transition } from "@headlessui/react";
-import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import {
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+} from "@heroicons/react/24/outline";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 
 export default function ToastNotification() {
   const [show, setShow] = useState(false);
+  const [icon, setIcon] = useState(null);
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
 
   const toastTimerRef = useRef(0);
   const toastTimerCloseRef = useRef(0);
 
   useEffect(() => {
-    window.showToastNotification = () => {
+    window.showToastNotification = ({ type, title, message }) => {
       setShow(false);
+      setTitle(title);
+      setMessage(message);
+
+      if (type === "success") {
+        setIcon(
+          <CheckCircleIcon
+            className="h-6 w-6 text-green-400"
+            aria-hidden="true"
+          />
+        );
+      } else if (type === "failed") {
+        setIcon(
+          <ExclamationCircleIcon
+            className="h-6 w-6 text-red-400"
+            aria-hidden="true"
+          />
+        );
+      }
 
       window.clearTimeout(toastTimerRef.current);
       window.clearTimeout(toastTimerCloseRef.current);
@@ -50,18 +74,11 @@ export default function ToastNotification() {
           <div className="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5">
             <div className="p-4">
               <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <CheckCircleIcon
-                    className="h-6 w-6 text-green-400"
-                    aria-hidden="true"
-                  />
-                </div>
+                {icon ? <div className="flex-shrink-0">{icon}</div> : null}
                 <div className="ml-3 w-0 flex-1 pt-0.5">
-                  <p className="text-sm font-medium text-gray-900">
-                    Successfully saved!
-                  </p>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Anyone with a link can now view this file.
+                  <p className="text-sm font-medium text-gray-900">{title}</p>
+                  <p className="mt-1 text-sm text-gray-500 first-letter:capitalize">
+                    {message}
                   </p>
                 </div>
                 <div className="ml-4 flex flex-shrink-0">

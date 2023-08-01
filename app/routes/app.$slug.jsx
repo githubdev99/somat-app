@@ -1,6 +1,6 @@
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Global, Layout, Task } from "~/components";
 import { HiOutlineArrowLeft } from "react-icons/hi";
 import { RxCross2 } from "react-icons/rx";
@@ -8,6 +8,7 @@ import { Dialog } from "@headlessui/react";
 import { AiOutlinePlus } from "react-icons/ai";
 import { GoPencil } from "react-icons/go";
 import * as Form from "@radix-ui/react-form";
+import { register, login, addWorkspace } from "~/lib/api";
 
 export const meta = () => [{ title: "Somat App" }];
 
@@ -24,7 +25,6 @@ export default function Index() {
   const [authComponent, setAuthComponent] = useState("auth");
   const [openAddTaskModal, setOpenAddTaskModal] = useState(false);
   const [openAddListModal, setOpenAddListModal] = useState(false);
-  const [openAddWorkspaceModal, setOpenAddWorkspaceModal] = useState(false);
 
   const components = {
     auth: <AuthComponent setComponent={setAuthComponent} />,
@@ -42,10 +42,6 @@ export default function Index() {
     window.addListModal = () => {
       setOpenAddListModal(true);
     };
-
-    window.addWorkspaceModal = () => {
-      setOpenAddWorkspaceModal(true);
-    };
   }, []);
 
   return (
@@ -55,7 +51,7 @@ export default function Index() {
           open={true}
           setOpen={() => {}}
           className="top"
-          positionClassName="inset-x-0 top-28"
+          positionClassName="inset-x-0 top-24"
           size="sm"
         >
           {components[authComponent]}
@@ -508,75 +504,16 @@ export default function Index() {
                 >
                   <RxCross2 /> Cancel
                 </Global.Button>
-                <Global.Button
-                  type="button"
-                  color="success"
-                  size="sm"
-                  onClick={() => {
-                    window.showToastNotification();
-                  }}
-                >
+                <Global.Button type="button" color="success" size="sm">
                   <AiOutlinePlus /> Create
                 </Global.Button>
               </div>
             </div>
           </Global.Modal>
-          <Global.Modal
-            open={openAddWorkspaceModal}
-            setOpen={setOpenAddWorkspaceModal}
-            positionClassName="inset-x-0 top-3"
-            size="sm"
-          >
-            <div className="px-5 py-3">
-              <div className="mb-4 text-[rgba(255,255,255,.9)]">
-                Create new workspace
-              </div>
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-normal leading-6"
-                >
-                  Name
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    autoComplete="name"
-                    className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="border-t border-t-[rgba(255,255,255,.1)] px-5 py-3">
-              <div className="flex justify-between">
-                <Global.Button
-                  type="button"
-                  color="danger"
-                  size="sm"
-                  onClick={() => setOpenAddWorkspaceModal(false)}
-                >
-                  <RxCross2 /> Cancel
-                </Global.Button>
-                <Global.Button
-                  type="button"
-                  color="success"
-                  size="sm"
-                  onClick={() => {
-                    window.showToastNotification();
-                  }}
-                >
-                  <AiOutlinePlus /> Create
-                </Global.Button>
-              </div>
-            </div>
-          </Global.Modal>
+          <ModalAddWorkspace />
           <Task.SlideOverDetail />
         </>
       )}
-      <Global.ToastNotification />
-      <Global.AlertConfirmation />
       <Layout.Container>
         <Layout.Sidebar
           data={data}
@@ -663,11 +600,35 @@ const BackAuthComponent = ({ setComponent, headerText }) => {
 };
 
 const LoginComponent = (props) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const { setToken } = useContext(Global.RootContext);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const response = await login({
+      email,
+      password,
+    });
+
+    const { code, message } = response?.status || {};
+
+    setToken(response?.data || "");
+
+    window.showToastNotification({
+      type: code === 200 ? "success" : "failed",
+      title: code === 200 ? "Success!" : "Failed!",
+      message: message,
+    });
+  };
+
   return (
-    <div>
+    <Form.Root onSubmit={handleSubmit}>
       <BackAuthComponent {...props} headerText="Log in page" />
       <div className="bg-[#242424] px-8 py-5">
-        <div className="mb-2">
+        <Form.Field className="mb-2" name="email">
           <label
             htmlFor="email"
             className="block text-sm font-normal leading-6"
@@ -675,16 +636,26 @@ const LoginComponent = (props) => {
             Email
           </label>
           <div className="mt-1">
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
-            />
+            <Form.Control asChild>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+                required
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </Form.Control>
+            <Form.Message match="valueMissing" className="text-red-400">
+              Please enter an email
+            </Form.Message>
+            <Form.Message match="typeMismatch" className="text-red-400">
+              Please provide a valid email
+            </Form.Message>
           </div>
-        </div>
-        <div className="mb-4">
+        </Form.Field>
+        <Form.Field className="mb-4" name="password">
           <label
             htmlFor="password"
             className="block text-sm font-normal leading-6"
@@ -692,32 +663,76 @@ const LoginComponent = (props) => {
             Password
           </label>
           <div className="mt-1">
-            <input
-              id="password"
-              name="password"
-              type="password"
-              className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
-            />
+            <Form.Control asChild>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+                required
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </Form.Control>
+            <Form.Message match="valueMissing" className="text-red-400">
+              Please enter a password
+            </Form.Message>
           </div>
-        </div>
-        <Link to="/app/shopcommerce">
+        </Form.Field>
+        <Form.Submit asChild>
           <Global.Button
-            type="button"
+            type="submit"
             color="light"
             size="sm"
             className="w-full"
           >
             Log in
           </Global.Button>
-        </Link>
+        </Form.Submit>
       </div>
-    </div>
+    </Form.Root>
   );
 };
 
 const SignupComponent = (props) => {
+  const { setComponent } = props;
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const handleSubmit = async () => {
+    const response = await register({
+      first_name: firstName,
+      last_name: lastName,
+      email: email,
+      password: password,
+    });
+
+    const { code, message } = response?.status || {};
+
+    window.showToastNotification({
+      type: code === 200 ? "success" : "failed",
+      title: code === 200 ? "Success!" : "Failed!",
+      message: message,
+    });
+
+    if (code === 200) setComponent("login");
+  };
+
   return (
-    <Form.Root>
+    <Form.Root
+      onSubmit={(e) => {
+        e.preventDefault();
+
+        window.showAlertConfirmation({
+          title: "Are you sure to register your account?",
+          message: "Please recheck your data before registering",
+          onSubmit: handleSubmit,
+        });
+      }}
+    >
       <BackAuthComponent {...props} headerText="Sign up page" />
       <div className="bg-[#242424] px-8 py-5">
         <Form.Field name="firstname">
@@ -736,6 +751,7 @@ const SignupComponent = (props) => {
                   autoComplete="firstname"
                   className="mb-1 block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
                   required
+                  onChange={(e) => setFirstName(e.target.value)}
                 />
               </Form.Control>
               <Form.Message match="valueMissing" className="text-red-400">
@@ -759,6 +775,7 @@ const SignupComponent = (props) => {
                   type="text"
                   autoComplete="lastname"
                   className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+                  onChange={(e) => setLastName(e.target.value)}
                 />
               </Form.Control>
             </div>
@@ -780,6 +797,7 @@ const SignupComponent = (props) => {
                   autoComplete="email"
                   className="mb-1 block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
                   required
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </Form.Control>
               <Form.Message match="valueMissing" className="text-red-400">
@@ -806,6 +824,7 @@ const SignupComponent = (props) => {
                   type="password"
                   className="mb-1 block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
                   required
+                  onChange={(e) => setPassword(e.target.value)}
                 />
               </Form.Control>
               <Form.Message match="valueMissing" className="text-red-400">
@@ -829,24 +848,31 @@ const SignupComponent = (props) => {
                   type="password"
                   className="mb-1 block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
                   required
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                 />
               </Form.Control>
               <Form.Message match="valueMissing" className="text-red-400">
                 Please enter a confirm password
               </Form.Message>
+              <Form.Message
+                match={(value) => value !== password}
+                className="text-red-400"
+              >
+                Password not matches
+              </Form.Message>
             </div>
           </div>
         </Form.Field>
-        <Link to="/app/auth">
+        <Form.Submit asChild>
           <Global.Button
-            type="button"
+            type="submit"
             color="light"
             size="sm"
             className="w-full"
           >
             Sign up
           </Global.Button>
-        </Link>
+        </Form.Submit>
       </div>
     </Form.Root>
   );
@@ -857,5 +883,99 @@ const CardDetailComponent = ({ children, className = "" }) => {
     <div className={`rounded-[10px] bg-[#242424] py-2 ${className}`}>
       {children}
     </div>
+  );
+};
+
+const ModalAddWorkspace = () => {
+  const { handleDataWorkspace } = useContext(Global.RootContext);
+
+  const [openAddModal, setOpenModal] = useState(false);
+
+  const [name, setName] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const response = await addWorkspace(
+      {
+        name,
+      },
+      localStorage.getItem("token")
+    );
+
+    const { code, message } = response?.status || {};
+
+    window.showToastNotification({
+      type: code === 200 ? "success" : "failed",
+      title: code === 200 ? "Success!" : "Failed!",
+      message: message,
+    });
+
+    setOpenModal(false);
+    await handleDataWorkspace();
+  };
+
+  useEffect(() => {
+    window.addWorkspaceModal = () => {
+      setOpenModal(true);
+    };
+  }, []);
+
+  return (
+    <Global.Modal
+      open={openAddModal}
+      setOpen={setOpenModal}
+      positionClassName="inset-x-0 top-3"
+      size="sm"
+    >
+      <Form.Root onSubmit={handleSubmit}>
+        <div className="px-5 py-3">
+          <div className="mb-4 text-[rgba(255,255,255,.9)]">
+            Create new workspace
+          </div>
+          <Form.Field name="name">
+            <label
+              htmlFor="name"
+              className="block text-sm font-normal leading-6"
+            >
+              Name
+            </label>
+            <div className="mt-1">
+              <Form.Control asChild>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </Form.Control>
+              <Form.Message match="valueMissing" className="text-red-400">
+                Please enter a workspace name
+              </Form.Message>
+            </div>
+          </Form.Field>
+        </div>
+        <div className="border-t border-t-[rgba(255,255,255,.1)] px-5 py-3">
+          <div className="flex justify-between">
+            <Global.Button
+              type="button"
+              color="danger"
+              size="sm"
+              onClick={() => setOpenModal(false)}
+            >
+              <RxCross2 /> Cancel
+            </Global.Button>
+            <Form.Submit asChild>
+              <Global.Button type="submit" color="success" size="sm">
+                <AiOutlinePlus /> Create
+              </Global.Button>
+            </Form.Submit>
+          </div>
+        </div>
+      </Form.Root>
+    </Global.Modal>
   );
 };
