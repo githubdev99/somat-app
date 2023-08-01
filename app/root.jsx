@@ -18,7 +18,13 @@ import {
 import tailwindStylesheetUrl from "~/styles/tailwind.css";
 import customStylesheetUrl from "~/styles/custom.css";
 import { Global } from "~/components";
-import { getAllWorkspace, getOneWorkspace, getProfile } from "./lib/api";
+import {
+  getAllList,
+  getAllWorkspace,
+  getOneList,
+  getOneWorkspace,
+  getProfile,
+} from "./lib/api";
 
 export const links = () => [
   { rel: "stylesheet", href: "https://rsms.me/inter/inter.css" },
@@ -37,11 +43,14 @@ export const loader = async ({ request }) => {
 
 export default function App() {
   const data = useLoaderData();
+
   const [token, setToken] = useState(null);
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState(null);
   const [dataProfile, setDataProfile] = useState(null);
   const [dataWorkspace, setDataWorkspace] = useState(null);
   const [dataWorkspaceSelected, setDataWorkspaceSelected] = useState(null);
+  const [dataList, setDataList] = useState(null);
+  const [dataListSelected, setDataListSelected] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -62,7 +71,10 @@ export default function App() {
   const handleDataProfile = async () => {
     const response = await getProfile(localStorage.getItem("token"));
 
-    if (response?.status?.code !== 200) return;
+    if (response?.status?.code !== 200) {
+      handleLogout();
+      return;
+    }
 
     setDataProfile(response?.data);
   };
@@ -94,6 +106,25 @@ export default function App() {
     setDataWorkspaceSelected(response?.data);
   };
 
+  const handleDataList = async (workspaceId) => {
+    const response = await getAllList(
+      workspaceId,
+      localStorage.getItem("token")
+    );
+
+    if (response?.status?.code !== 200) return;
+
+    setDataList(response?.data);
+  };
+
+  const handleSelectedList = async (id) => {
+    const response = await getOneList(id, localStorage.getItem("token"));
+
+    if (response?.status?.code !== 200) return;
+
+    setDataListSelected(response?.data);
+  };
+
   useEffect(() => {
     handleToken();
 
@@ -104,6 +135,8 @@ export default function App() {
 
     handleDataProfile();
     handleDataWorkspace();
+    handleDataList(localStorage.getItem("selectedWorkspaceId"));
+    handleSelectedWorkspace(localStorage.getItem("selectedWorkspaceId"));
 
     if (location.pathname === "/app/auth") navigate(`/app/assigned`);
   }, [token]);
@@ -119,6 +152,7 @@ export default function App() {
       ? selectedWorkspaceId
       : localStorage.getItem("selectedWorkspaceId");
 
+    handleDataList(selectedId);
     handleSelectedWorkspace(selectedId);
   }, [selectedWorkspaceId]);
 
@@ -138,12 +172,16 @@ export default function App() {
             dataProfile,
             dataWorkspace,
             dataWorkspaceSelected,
+            dataList,
+            dataListSelected,
             setToken,
             setSelectedWorkspaceId,
             handleDataProfile,
             handleDataWorkspace,
             handleLogout,
             handleSelectedWorkspace,
+            handleDataList,
+            handleSelectedList,
           }}
         >
           <Global.ToastNotification />

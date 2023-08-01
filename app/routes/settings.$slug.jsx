@@ -51,28 +51,44 @@ export default function Settings() {
     },
   ];
 
+  const [isLoading, setIsLoading] = useState(true);
   const [clickedNavId, setClickedNavId] = useState(items[0].id || "");
   const [datas, setDatas] = useState([]);
 
   const itemNavSelected = items?.find(({ id }) => id === clickedNavId);
 
   const handleGetAllAttribute = async () => {
+    setIsLoading(true);
+
+    const searchParams = new URLSearchParams(document.location.search);
+
+    if (searchParams?.get("tab")) setClickedNavId(searchParams?.get("tab"));
+
+    let attributeType = searchParams?.get("tab")
+      ? searchParams?.get("tab")
+      : clickedNavId;
+
     const response = await getAllAttribute(
-      clickedNavId,
+      attributeType,
       localStorage.getItem("selectedWorkspaceId"),
       localStorage.getItem("token")
     );
 
     if (response?.status?.code !== 200) return;
 
+    setIsLoading(false);
     setDatas(response?.data);
   };
   // End for attribute settings
 
+  const defaultHexColorAttribute = "#B0B0B0";
+
   const [openAddNewAttributeModal, setOpenAddNewAttributeModal] =
     useState(false);
   const [nameAttribute, setNameAttribute] = useState("");
-  const [hexColorAttribute, setHexColorAttribute] = useState("#B0B0B0");
+  const [hexColorAttribute, setHexColorAttribute] = useState(
+    defaultHexColorAttribute
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -96,11 +112,14 @@ export default function Settings() {
       message: message,
     });
 
+    setOpenAddNewAttributeModal(false);
     await handleGetAllAttribute();
   };
 
   useEffect(() => {
     window.addNewAttributeModal = () => {
+      setNameAttribute("");
+      setHexColorAttribute(defaultHexColorAttribute);
       setOpenAddNewAttributeModal(true);
     };
   }, []);
@@ -132,7 +151,7 @@ export default function Settings() {
                       id="name"
                       name="name"
                       type="text"
-                      autoComplete="name"
+                      autoComplete="off"
                       className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
                       required
                       style={{ color: hexColorAttribute }}
@@ -168,7 +187,7 @@ export default function Settings() {
             <div className="flex justify-between">
               <Global.Button
                 type="button"
-                color="danger"
+                color="secondary"
                 size="sm"
                 onClick={() => setOpenAddNewAttributeModal(false)}
               >
@@ -194,6 +213,7 @@ export default function Settings() {
           datas={datas}
           setDatas={setDatas}
           handleGetAllAttribute={handleGetAllAttribute}
+          isLoading={isLoading}
         />
       </Layout.Container>
     </>

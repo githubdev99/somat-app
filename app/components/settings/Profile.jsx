@@ -92,7 +92,7 @@ export default function Profile() {
                 id="firstname"
                 name="firstname"
                 type="text"
-                autoComplete="firstname"
+                autoComplete="off"
                 defaultValue={firstName}
                 className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
                 onChange={(e) => setFirstName(e.target.value)}
@@ -119,7 +119,7 @@ export default function Profile() {
                 id="lastname"
                 name="lastname"
                 type="text"
-                autoComplete="lastname"
+                autoComplete="off"
                 defaultValue={lastName}
                 className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
                 onChange={(e) => setLastName(e.target.value)}
@@ -141,7 +141,7 @@ export default function Profile() {
               id="email"
               name="email"
               type="text"
-              autoComplete="email"
+              autoComplete="off"
               defaultValue={email}
               className="block w-full max-w-[400px] cursor-not-allowed rounded-md border-0 bg-[#414141] px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 focus:outline-none sm:text-sm sm:leading-6"
               disabled

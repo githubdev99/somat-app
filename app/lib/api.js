@@ -304,3 +304,94 @@ export const deleteAttribute = async (id, type, workspace_id, token) => {
     .then((result) => result)
     .catch((error) => error);
 };
+
+export const getAllList = async (workspace_id, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Authorization", token);
+
+  var requestOptions = {
+    method: "GET",
+    headers: myHeaders,
+    redirect: "follow",
+  };
+
+  return await fetch(
+    `${window.ENV.API_URL}/list/${workspace_id}`,
+    requestOptions
+  )
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};
+
+export const getOneList = async (id, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Authorization", token);
+
+  var requestOptions = {
+    method: "GET",
+    headers: myHeaders,
+    redirect: "follow",
+  };
+
+  return await fetch(`${window.ENV.API_URL}/list/detail/${id}`, requestOptions)
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};
+
+export const addList = async (payload, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Content-Type", "application/json");
+  myHeaders.append("Authorization", token);
+
+  var raw = JSON.stringify(payload);
+
+  var requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: raw,
+    redirect: "follow",
+  };
+
+  return await fetch(`${window.ENV.API_URL}/list`, requestOptions)
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};
+
+export const updateList = async (payload, id, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Content-Type", "application/json");
+  myHeaders.append("Authorization", token);
+
+  var raw = JSON.stringify(payload);
+
+  var requestOptions = {
+    method: "PUT",
+    headers: myHeaders,
+    body: raw,
+    redirect: "follow",
+  };
+
+  return await fetch(`${window.ENV.API_URL}/list/${id}`, requestOptions)
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};
+
+export const deleteList = async (id, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Authorization", token);
+
+  var requestOptions = {
+    method: "DELETE",
+    headers: myHeaders,
+    redirect: "follow",
+  };
+
+  return await fetch(`${window.ENV.API_URL}/list/${id}`, requestOptions)
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};

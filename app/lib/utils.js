@@ -16,3 +16,12 @@ export const hexToRgba = (hex, opacity = "1") => {
   }
   throw new Error("Bad Hex");
 };
+
+export const convertDate = (date) => {
+  return date.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};

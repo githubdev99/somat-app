@@ -2,13 +2,13 @@ import { Link } from "@remix-run/react";
 import { motion } from "framer-motion";
 import { TbLayoutSidebarLeftCollapse, TbTrash } from "react-icons/tb";
 import { HiCog } from "react-icons/hi";
-import { MdInbox, MdOutlineAddBox } from "react-icons/md";
+import { MdInbox, MdOutlineAddBox, MdEdit } from "react-icons/md";
 import { AiOutlinePlus, AiOutlineQuestionCircle } from "react-icons/ai";
 import { GoPencil } from "react-icons/go";
 import { BiLockAlt } from "react-icons/bi";
 import { CgAssign } from "react-icons/cg";
 import { RiUserAddLine } from "react-icons/ri";
-import { BsFillCaretRightFill } from "react-icons/bs";
+import { BsFillCaretRightFill, BsPersonWorkspace } from "react-icons/bs";
 import {
   ICON_COLLAPSIBLE_ROTATE,
   VISIBLE,
@@ -18,7 +18,6 @@ import { Fragment, useContext, useEffect, useState } from "react";
 import classNames from "classnames";
 import { Dialog, Transition } from "@headlessui/react";
 import { Global } from "~/components";
-import { FaUserCircle } from "react-icons/fa";
 
 export default function Sidebar(props) {
   const { sidebarOpen, setSidebarOpen } = props;
@@ -74,14 +73,15 @@ function SidebarWrapper(props) {
     handleLogout,
     dataWorkspace,
     dataWorkspaceSelected,
-    selectedWorkspaceId,
     setSelectedWorkspaceId,
+    dataList,
+    handleSelectedList,
   } = useContext(Global.RootContext);
 
   const { id: workspaceSelectedId, name: workspaceSelectedName } =
     dataWorkspaceSelected || {};
 
-  const { data, lists, setSidebarOpen } = props;
+  const { data, setSidebarOpen } = props;
   const { params } = data || {};
   const { slug } = params || {};
 
@@ -91,6 +91,7 @@ function SidebarWrapper(props) {
   const [clickedNavId, setClickedNavId] = useState(slug || "");
   const [isWorkspaceSelectedChanged, setIsWorkspaceSelectedChanged] =
     useState(false);
+  const [onMouseHoverList, setOnMouseHoverList] = useState(null);
 
   useEffect(() => {
     setIsWorkspaceSelectedChanged(true);
@@ -98,6 +99,14 @@ function SidebarWrapper(props) {
       setIsWorkspaceSelectedChanged(false);
     }, 1);
   }, [dataWorkspaceSelected]);
+
+  useEffect(() => {
+    setClickedNavId(slug);
+  }, [slug]);
+
+  useEffect(() => {
+    if (dataList?.length) setIsOpenCollapsible(true);
+  }, [dataList]);
 
   const defaultNavs = [
     {
@@ -174,7 +183,7 @@ function SidebarWrapper(props) {
               trigger={
                 <div className="group flex w-full cursor-pointer flex-row items-center rounded-lg transition duration-200 ease-in hover:bg-[#232323]">
                   <div className="flex-1 px-3 py-1">
-                    {workspaceSelectedName}
+                    {isAuthPage ? "My Workspace" : workspaceSelectedName}
                   </div>
                   <div className="border-1 px-2 py-1 group-hover:border-l-[1px] group-hover:border-[#393939] lg:hidden lg:border-0">
                     <div
@@ -218,7 +227,7 @@ function SidebarWrapper(props) {
                             alt=""
                           />
                         ) : (
-                          <FaUserCircle
+                          <BsPersonWorkspace
                             className="h-[22px] w-[22px]"
                             aria-hidden="true"
                           />
@@ -293,33 +302,60 @@ function SidebarWrapper(props) {
                 </motion.span>
                 Lists
               </div>
-              {isOpenCollapsible && Boolean(lists?.length) ? (
+              {isOpenCollapsible && Boolean(dataList?.length) ? (
                 <ul className="-mx-2 space-y-1">
-                  {lists.map((item, index) => {
-                    const { icon, hexColor, url, name } = item;
-
-                    let id = `list-nav-${index}`;
+                  {dataList.map((item, index) => {
+                    const { id, name, hex_color } = item;
 
                     const listNavClasses = classNames(
                       "my-1 flex cursor-pointer flex-row items-center gap-1 rounded-lg px-2 py-[3px] transition duration-150 ease-in hover:bg-[#232323] active:opacity-80",
                       {
                         "bg-[rgba(255,255,255,.14)] text-[#FFFFFFE6]":
-                          clickedNavId === id,
+                          clickedNavId == id,
                       }
                     );
 
                     return (
-                      <li key={index}>
+                      <li
+                        key={index}
+                        onMouseEnter={() => setOnMouseHoverList(id)}
+                        onMouseLeave={() => setOnMouseHoverList(null)}
+                      >
                         <Link
-                          to={url}
+                          to={`/app/${id}`}
                           className={listNavClasses}
-                          onClick={() => setClickedNavId(id)}
+                          onClick={() => {
+                            setClickedNavId(id);
+                            handleSelectedList(id);
+                          }}
                         >
-                          <div
-                            className="c-list-icon cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141] active:opacity-80"
-                            dangerouslySetInnerHTML={{ __html: icon }}
-                          ></div>
-                          {name}
+                          <div className="c-list-icon cursor-pointer rounded-full p-1 transition duration-200 ease-in">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 448 512"
+                            >
+                              <path
+                                d="M181.3 32.4c17.4 2.9 29.2 19.4 26.3 36.8L197.8 128h95.1l11.5-69.3c2.9-17.4 19.4-29.2 36.8-26.3s29.2 19.4 26.3 36.8L357.8 128H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H347.1L325.8 320H384c17.7 0 32 14.3 32 32s-14.3 32-32 32H315.1l-11.5 69.3c-2.9 17.4-19.4 29.2-36.8 26.3s-29.2-19.4-26.3-36.8l9.8-58.7H155.1l-11.5 69.3c-2.9 17.4-19.4 29.2-36.8 26.3s-29.2-19.4-26.3-36.8L90.2 384H32c-17.7 0-32-14.3-32-32s14.3-32 32-32h68.9l21.3-128H64c-17.7 0-32-14.3-32-32s14.3-32 32-32h68.9l11.5-69.3c2.9-17.4 19.4-29.2 36.8-26.3zM187.1 192L165.8 320h95.1l21.3-128H187.1z"
+                                fill={hex_color}
+                              />
+                            </svg>
+                          </div>
+                          <span style={{ color: hex_color }}>{name}</span>
+                          {onMouseHoverList === id && (
+                            <div
+                              className="c-list-icon ml-auto cursor-pointer rounded-full p-1 transition duration-200 ease-in hover:bg-[#414141] active:opacity-80"
+                              onClick={() =>
+                                window.addListModal({
+                                  isUpdate: true,
+                                  id,
+                                  name,
+                                  hexColor: hex_color,
+                                })
+                              }
+                            >
+                              <MdEdit size={16} />
+                            </div>
+                          )}
                         </Link>
                       </li>
                     );

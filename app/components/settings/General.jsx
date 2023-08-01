@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import * as Form from "@radix-ui/react-form";
 import { useContext, useEffect, useRef, useState } from "react";
-import { FaUserCircle } from "react-icons/fa";
+import { BsPersonWorkspace } from "react-icons/bs";
 import { Global } from "~/components";
 import { updateProfileImageWorkspace, updateProfileWorkspace } from "~/lib/api";
 
@@ -98,7 +98,6 @@ export default function General() {
                 id="name"
                 name="name"
                 type="text"
-                autoComplete="name"
                 defaultValue={name}
                 className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
                 onChange={(e) => setName(e.target.value)}
@@ -123,7 +122,7 @@ export default function General() {
                   alt=""
                 />
               ) : (
-                <FaUserCircle className="h-[120px] w-[120px] rounded-full" />
+                <BsPersonWorkspace className="h-[120px] w-[120px] rounded-full" />
               )}
               <label htmlFor="file-upload">
                 <span className="flex cursor-pointer items-center justify-center gap-2 rounded-lg px-2 py-1 text-sm font-normal text-[rgba(255,255,255,.64)] shadow-sm ring-1 ring-inset ring-[#414141] transition  duration-200 ease-in hover:bg-[#414141] focus:outline-none active:bg-slate-500 active:opacity-80 active:ring-slate-500">

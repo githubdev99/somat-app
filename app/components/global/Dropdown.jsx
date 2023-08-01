@@ -2,6 +2,7 @@
 import { Fragment } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import classNames from "classnames";
+import { Link } from "@remix-run/react";
 
 export default function Dropdown(props) {
   const {
@@ -63,35 +64,46 @@ export default function Dropdown(props) {
                 content,
                 isInnerHTML = true,
                 isBottomLink = false,
+                isDisabledLink = false,
                 onClick = {},
               } = item;
 
+              const itemProps = (active) => {
+                return {
+                  ...(!isDisabledLink && {
+                    to: url,
+                  }),
+                  onClick,
+                  className: classNames(
+                    active ? "bg-[#333333] text-[#FFFFFFE6]" : "text-[#ACACAC]",
+                    !index ? "rounded-t-md" : "",
+                    index === items.length - 1 ? "rounded-b-md" : "",
+                    isBottomLink
+                      ? "border-t border-[rgba(255,255,255,.1)]"
+                      : "",
+                    "c-list-icon group flex items-center gap-2 px-4 py-1.5 text-sm transition duration-200 ease-in active:opacity-80 cursor-pointer"
+                  ),
+                  ...(isInnerHTML && {
+                    dangerouslySetInnerHTML: {
+                      __html: content,
+                    },
+                  }),
+                };
+              };
+
               return (
                 <Menu.Item key={index}>
-                  {({ active }) => (
-                    <a
-                      href={url}
-                      onClick={onClick}
-                      className={classNames(
-                        active
-                          ? "bg-[#333333] text-[#FFFFFFE6]"
-                          : "text-[#ACACAC]",
-                        !index ? "rounded-t-md" : "",
-                        index === items.length - 1 ? "rounded-b-md" : "",
-                        isBottomLink
-                          ? "border-t border-[rgba(255,255,255,.1)]"
-                          : "",
-                        "c-list-icon group flex items-center gap-2 px-4 py-1.5 text-sm transition duration-200 ease-in active:opacity-80"
-                      )}
-                      {...(isInnerHTML && {
-                        dangerouslySetInnerHTML: {
-                          __html: content,
-                        },
-                      })}
-                    >
-                      {!isInnerHTML ? content : null}
-                    </a>
-                  )}
+                  {({ active }) =>
+                    isDisabledLink ? (
+                      <span {...itemProps(active)}>
+                        {!isInnerHTML ? content : null}
+                      </span>
+                    ) : (
+                      <Link {...itemProps(active)}>
+                        {!isInnerHTML ? content : null}
+                      </Link>
+                    )
+                  }
                 </Menu.Item>
               );
             })}

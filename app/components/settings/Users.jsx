@@ -23,7 +23,7 @@ export default function Users(props) {
               id="email"
               name="email"
               type="email"
-              autoComplete="email"
+              autoComplete="off"
               className="block w-full rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-[rgba(255,255,255,.4)] hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
               placeholder="name@example.com"
             />
@@ -33,7 +33,7 @@ export default function Users(props) {
               id="email"
               name="email"
               type="email"
-              autoComplete="email"
+              autoComplete="off"
               className="block w-full rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-[rgba(255,255,255,.4)] hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
               placeholder="name@example.com"
             />

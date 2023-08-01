@@ -1,8 +1,9 @@
-import { motion } from "framer-motion";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { color, motion } from "framer-motion";
 import { Global, Task } from "~/components";
 import { BsThreeDots } from "react-icons/bs";
 import classNames from "classnames";
-import { Fragment, useState } from "react";
+import { Fragment, useContext, useEffect, useState } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { MdInbox, MdOutlineAddBox } from "react-icons/md";
 import { VISIBLE_CUSTOM } from "~/lib/animation";
@@ -12,11 +13,18 @@ import { RiUserAddLine } from "react-icons/ri";
 import { BiLockAlt } from "react-icons/bi";
 import { TbLayoutSidebarRightCollapse, TbTrash } from "react-icons/tb";
 import { IoTrashBin } from "react-icons/io5";
+import { useNavigate } from "@remix-run/react";
 
 export default function Lists(props) {
+  const { dataListSelected, handleSelectedList } = useContext(
+    Global.RootContext
+  );
+
   const { data, setSidebarOpen } = props;
   const { params } = data || {};
   const { slug } = params || {};
+
+  const navigate = useNavigate();
 
   const titleDefaultPages = {
     inbox: (
@@ -205,7 +213,9 @@ export default function Lists(props) {
     ["inbox", "draft", "assigned", "created", "private", "trash"].includes(
       slug
     );
-  let titlePage = isDefaultPage ? titleDefaultPages[slug] : slug;
+  let titlePage = isDefaultPage
+    ? titleDefaultPages[slug]
+    : dataListSelected?.name;
   let itemDropdownNav = [
     {
       url: "#",
@@ -226,6 +236,14 @@ export default function Lists(props) {
         }),
     });
 
+  useEffect(() => {
+    if (!isDefaultPage) handleSelectedList(slug);
+  }, []);
+
+  useEffect(() => {
+    if (!dataListSelected) navigate("/app/assigned");
+  }, [dataListSelected]);
+
   return (
     <>
       <div className="sticky top-0 z-40 flex h-12 shrink-0 items-center gap-x-4 border-none px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-6">
@@ -236,16 +254,28 @@ export default function Lists(props) {
           <TbLayoutSidebarRightCollapse size={18} />
         </div>
         <div className="flex w-full flex-row items-center justify-between gap-2 rounded-lg transition-all duration-200 ease-in">
-          <div className="flex cursor-text flex-row items-center gap-1 rounded-lg px-2 transition-all duration-200 ease-in hover:bg-[#181818] active:opacity-80">
+          <div className="flex cursor-text flex-row items-center gap-1 rounded-lg px-2 transition-all duration-200 ease-in active:opacity-80">
             {isDefaultPage ? null : (
               <div
-                className={`c-list-icon cursor-pointer rounded-full p-1 transition-all duration-200 ease-in hover:bg-[#414141] active:opacity-80`}
-                dangerouslySetInnerHTML={{
-                  __html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M181.3 32.4c17.4 2.9 29.2 19.4 26.3 36.8L197.8 128h95.1l11.5-69.3c2.9-17.4 19.4-29.2 36.8-26.3s29.2 19.4 26.3 36.8L357.8 128H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H347.1L325.8 320H384c17.7 0 32 14.3 32 32s-14.3 32-32 32H315.1l-11.5 69.3c-2.9 17.4-19.4 29.2-36.8 26.3s-29.2-19.4-26.3-36.8l9.8-58.7H155.1l-11.5 69.3c-2.9 17.4-19.4 29.2-36.8 26.3s-29.2-19.4-26.3-36.8L90.2 384H32c-17.7 0-32-14.3-32-32s14.3-32 32-32h68.9l21.3-128H64c-17.7 0-32-14.3-32-32s14.3-32 32-32h68.9l11.5-69.3c2.9-17.4 19.4-29.2 36.8-26.3zM187.1 192L165.8 320h95.1l21.3-128H187.1z"/></svg>`,
-                }}
-              ></div>
+                className={`c-list-icon cursor-pointer rounded-full p-1 transition-all duration-200 ease-in`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                  <path
+                    d="M181.3 32.4c17.4 2.9 29.2 19.4 26.3 36.8L197.8 128h95.1l11.5-69.3c2.9-17.4 19.4-29.2 36.8-26.3s29.2 19.4 26.3 36.8L357.8 128H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H347.1L325.8 320H384c17.7 0 32 14.3 32 32s-14.3 32-32 32H315.1l-11.5 69.3c-2.9 17.4-19.4 29.2-36.8 26.3s-29.2-19.4-26.3-36.8l9.8-58.7H155.1l-11.5 69.3c-2.9 17.4-19.4 29.2-36.8 26.3s-29.2-19.4-26.3-36.8L90.2 384H32c-17.7 0-32-14.3-32-32s14.3-32 32-32h68.9l21.3-128H64c-17.7 0-32-14.3-32-32s14.3-32 32-32h68.9l11.5-69.3c2.9-17.4 19.4-29.2 36.8-26.3zM187.1 192L165.8 320h95.1l21.3-128H187.1z"
+                    fill={dataListSelected?.hex_color || "#ACACAC"}
+                  />
+                </svg>
+              </div>
             )}
-            {isAuthPage ? "general" : titlePage}
+            {isAuthPage ? (
+              "general"
+            ) : dataListSelected?.hex_color && !isDefaultPage ? (
+              <span style={{ color: dataListSelected.hex_color }}>
+                {titlePage}
+              </span>
+            ) : (
+              titlePage
+            )}
           </div>
           <div className="flex flex-row items-center gap-2">
             {slug === "trash" ? (

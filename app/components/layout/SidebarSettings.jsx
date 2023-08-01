@@ -71,7 +71,7 @@ function SidebarWrapper(props) {
         },
         {
           id: "attributes",
-          url: "/settings/attributes",
+          url: "/settings/attributes?tab=status",
           content: <>Attributes</>,
         },
       ],

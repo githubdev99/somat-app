@@ -7,6 +7,7 @@ export default function Dropdown(props) {
     textColor,
     borderColor,
     text,
+    ...otherProps
   } = props;
 
   return (
@@ -21,6 +22,7 @@ export default function Dropdown(props) {
           border: `1px solid ${borderColor}`,
         }),
       }}
+      {...otherProps}
     >
       {text}
     </div>
