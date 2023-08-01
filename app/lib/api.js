@@ -285,3 +285,22 @@ export const addAttribute = async (payload, type, workspace_id, token) => {
     .then((result) => result)
     .catch((error) => error);
 };
+
+export const deleteAttribute = async (id, type, workspace_id, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Authorization", token);
+
+  var requestOptions = {
+    method: "DELETE",
+    headers: myHeaders,
+    redirect: "follow",
+  };
+
+  return await fetch(
+    `${window.ENV.API_URL}/task/attribute/${type}/${workspace_id}/${id}`,
+    requestOptions
+  )
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};

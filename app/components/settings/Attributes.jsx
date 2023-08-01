@@ -1,10 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import classNames from "classnames";
 import { useEffect, useState } from "react";
-import { BsCheckSquare, BsSave2, BsTag } from "react-icons/bs";
 import { Global } from "~/components";
 import { MdOutlineAddBox } from "react-icons/md";
-import { getAllAttribute, updateAttribute } from "~/lib/api";
+import { GrClose } from "react-icons/gr";
+import { deleteAttribute, updateAttribute } from "~/lib/api";
 
 export default function Attributes(props) {
   const {
@@ -57,6 +57,34 @@ export default function Attributes(props) {
     });
 
     await handleGetAllAttribute();
+  };
+
+  const handleDeleteAttribute = (id, name) => {
+    const fetchDeleteAttribute = async () => {
+      const response = await deleteAttribute(
+        id,
+        clickedNavId,
+        localStorage.getItem("selectedWorkspaceId"),
+        localStorage.getItem("token")
+      );
+
+      const { code, message } = response?.status || {};
+
+      window.showToastNotification({
+        type: code === 200 ? "success" : "failed",
+        title: code === 200 ? "Success!" : "Failed!",
+        message: message,
+      });
+
+      await handleGetAllAttribute();
+    };
+
+    window.showAlertConfirmation({
+      title: `Confirm delete attribute`,
+      message: `Are you sure to delete ${itemNavSelected?.name?.toLowerCase()} attribute ${name} ?`,
+      onSubmit: fetchDeleteAttribute,
+      color: "danger",
+    });
   };
 
   useEffect(() => {
@@ -124,7 +152,13 @@ export default function Attributes(props) {
 
                 return (
                   <tr key={index}>
-                    <td className="flex w-[400px] gap-2 py-2 pr-3 ">
+                    <td className="flex w-[400px] gap-2 py-2 pr-3">
+                      <div
+                        className="flex cursor-pointer items-center justify-center rounded-md bg-[#FE5E85] px-2 py-1.5 text-[rgba(255,255,255,.9)] shadow-sm transition duration-150 ease-in hover:opacity-80 active:bg-[#db5173]"
+                        onClick={() => handleDeleteAttribute(id, name)}
+                      >
+                        <GrClose size={16} />
+                      </div>
                       <input
                         id={id}
                         name="status"
