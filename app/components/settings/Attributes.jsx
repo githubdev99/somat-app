@@ -191,7 +191,9 @@ export default function Attributes(props) {
                           defaultValue={name}
                           className={`block w-full rounded-md border-0 bg-transparent px-2 py-1 shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6`}
                           style={{ color: hex_color }}
-                          disabled={is_owner}
+                          {...!is_owner && {
+                            disabled: true,
+                          }}
                           onChange={(e) =>
                             handleChangeAttribute({
                               id: id,

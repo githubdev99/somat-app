@@ -64,7 +64,8 @@ export default function App() {
 
   const handleLogout = () => {
     setToken(null);
-    localStorage.setItem("token", "");
+    localStorage.removeItem("token");
+    localStorage.removeItem("selectedWorkspaceId");
     navigate("/app/auth");
   };
 
