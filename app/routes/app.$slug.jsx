@@ -742,7 +742,7 @@ const ModalAddTask = () => {
   const [description, setDescription] = useState(null);
   const [dueDate, setDueDate] = useState(null);
   const [listSelected, setListSelected] = useState({});
-  const [assigneesSelected, setAssigneesSelected] = useState({});
+  const [assigneesSelected, setAssigneesSelected] = useState([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -757,7 +757,7 @@ const ModalAddTask = () => {
       return;
     }
 
-    if (!assigneesSelected?.id) {
+    if (!assigneesSelected?.length) {
       window.showToastNotification({
         type: "failed",
         title: "Info!",
@@ -775,7 +775,7 @@ const ModalAddTask = () => {
         list_id: listSelected.id,
         task_status_id: taskStatusSelected.id,
         user_id: dataProfile.id,
-        assignees_user_id: assigneesSelected.id,
+        assignees: assigneesSelected,
         workspace_id: Number(localStorage.getItem("selectedWorkspaceId")),
         ...(taskPrioritySelected?.id && {
           task_priority_id: taskPrioritySelected.id,
@@ -941,8 +941,12 @@ const ModalAddTask = () => {
                         const { first_name, profile_image } = assignees;
 
                         return {
-                          url: "#",
-                          onClick: () => setAssigneesSelected(assignees),
+                          isDisabledLink: true,
+                          onClick: () =>
+                            setAssigneesSelected([
+                              ...assigneesSelected,
+                              assignees,
+                            ]),
                           content: (
                             <div className="flex items-center">
                               <div className="h-[22px] w-[22px] flex-shrink-0">
@@ -968,22 +972,26 @@ const ModalAddTask = () => {
                       menuItemsClassName="left-0 max-h-[180px] overflow-y-auto"
                       menuButtonClassName="min-h-[25px]"
                     >
-                      {Object.keys(assigneesSelected).length ? (
-                        <div className="flex items-center px-1 pt-1">
-                          <div className="h-[22px] w-[22px] flex-shrink-0">
-                            {assigneesSelected.profile_image ? (
-                              <img
-                                className="h-[22px] w-[22px] rounded-full"
-                                src={assigneesSelected.profile_image}
-                                alt=""
-                              />
-                            ) : (
-                              <FaUserCircle className="h-[22px] w-[22px] rounded-full" />
-                            )}
-                          </div>
-                          <div className="ml-2">
-                            {assigneesSelected.first_name}
-                          </div>
+                      {assigneesSelected?.length ? (
+                        <div className="flex items-center gap-1 px-1 pt-1">
+                          {assigneesSelected.map((assign, index) => {
+                            return (
+                              <div
+                                key={index}
+                                className="h-[22px] w-[22px] flex-shrink-0"
+                              >
+                                {assign.profile_image ? (
+                                  <img
+                                    className="h-[22px] w-[22px] rounded-full"
+                                    src={assign.profile_image}
+                                    alt=""
+                                  />
+                                ) : (
+                                  <FaUserCircle className="h-[22px] w-[22px] rounded-full" />
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       ) : (
                         <span className="px-1">Assign...</span>
@@ -1190,24 +1198,26 @@ const SlideOverActivity = () => {
                                   window.slideOverDetail(task_id);
                                 }}
                               >
-                                <div className="flex items-center gap-2 justify-between">
-                                  <div className="text-sm text-[rgba(255,255,255,.9)] truncate max-w-[150px]">
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="max-w-[150px] truncate text-sm text-[rgba(255,255,255,.9)]">
                                     {task_name}
                                   </div>
-                                  <div className="text-xs flex-grow text-right">
+                                  <div className="flex-grow text-right text-xs">
                                     {convertDateWithTime(new Date(created_at))}
                                   </div>
                                 </div>
                                 <div className="mt-1 flex">
-                                  <div className="mt-0.5">{profile_image?.length ? (
-                                    <img
-                                      className="h-[16px] w-[16px] rounded-full"
-                                      src={profile_image}
-                                      alt=""
-                                    />
-                                  ) : (
-                                    <FaUserCircle className="h-[16px] w-[16px] rounded-full" />
-                                  )}</div>
+                                  <div className="mt-0.5">
+                                    {profile_image?.length ? (
+                                      <img
+                                        className="h-[16px] w-[16px] rounded-full"
+                                        src={profile_image}
+                                        alt=""
+                                      />
+                                    ) : (
+                                      <FaUserCircle className="h-[16px] w-[16px] rounded-full" />
+                                    )}
+                                  </div>
                                   <div className="ml-2 max-w-[93%] text-xs">
                                     <div
                                       dangerouslySetInnerHTML={{

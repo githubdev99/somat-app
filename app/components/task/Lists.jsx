@@ -347,7 +347,7 @@ export default function Lists(props) {
                                               className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
                                               menuButtonClassName="min-h-[24px]"
                                             >
-                                              <div className="flex h-[22px] w-[22px]">
+                                              <div className="flex gap-1">
                                                 {assignees.map(
                                                   (assign, index) => (
                                                     <>
