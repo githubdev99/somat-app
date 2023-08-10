@@ -508,3 +508,22 @@ export const getOneTask = async (id, token) => {
     .then((result) => result)
     .catch((error) => error);
 };
+
+export const getAllTaskHistory = async (workspace_id, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Authorization", token);
+
+  var requestOptions = {
+    method: "GET",
+    headers: myHeaders,
+    redirect: "follow",
+  };
+
+  return await fetch(
+    `${window.ENV.API_URL}/task/history/${workspace_id}`,
+    requestOptions
+  )
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};

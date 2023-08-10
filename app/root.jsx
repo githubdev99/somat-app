@@ -22,6 +22,7 @@ import {
   getAllAttribute,
   getAllList,
   getAllTask,
+  getAllTaskHistory,
   getAllUsersWorkspace,
   getAllWorkspace,
   getOneList,
@@ -58,6 +59,7 @@ export default function App() {
   const [dataList, setDataList] = useState(null);
   const [dataListSelected, setDataListSelected] = useState(false);
   const [dataAssignees, setDataAssignees] = useState([]);
+  const [dataActivity, setDataActivity] = useState([]);
   const [dataTask, setDataTask] = useState([]);
   const [clickedNavId, setClickedNavId] = useState(slug || "");
   const [dataTaskStatus, setDataTaskStatus] = useState([]);
@@ -157,12 +159,25 @@ export default function App() {
     setDataAssignees(response?.data);
   };
 
+  const handleDataActivity = async (workspaceId) => {
+    const response = await getAllTaskHistory(
+      workspaceId,
+      localStorage.getItem("token")
+    );
+
+    if (response?.status?.code !== 200) return;
+
+    setDataActivity(response?.data);
+  };
+
   const handleDataTask = async (query) => {
     const response = await getAllTask(query, localStorage.getItem("token"));
 
     if (response?.status?.code !== 200) return;
 
     setDataTask(response?.data);
+
+    await handleDataActivity(query.workspace_id);
   };
 
   const handleDataTaskStatus = async (workspaceId) => {
@@ -389,6 +404,7 @@ export default function App() {
             dataTaskPriority,
             dataTaskProject,
             dataTask,
+            dataActivity,
             clickedNavId,
             taskStatusDropdown,
             taskPriorityDropdown,

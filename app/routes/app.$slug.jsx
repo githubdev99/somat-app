@@ -13,7 +13,7 @@ import { IoTrashBin, IoNewspaperOutline, IoSend } from "react-icons/io5";
 import { FaUserCircle, FaRegBellSlash } from "react-icons/fa";
 import { BsThreeDots, BsChat } from "react-icons/bs";
 import { register, login, addWorkspace } from "~/lib/api";
-import { convertDate } from "~/lib/utils";
+import { convertDate, convertDateWithTime } from "~/lib/utils";
 import {
   addList,
   addTask,
@@ -1134,6 +1134,8 @@ const ModalAddTask = () => {
 };
 
 const SlideOverActivity = () => {
+  const { dataActivity } = useContext(Global.RootContext);
+
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -1141,135 +1143,6 @@ const SlideOverActivity = () => {
       setOpen(true);
     };
   }, []);
-
-  const itemsExample = [
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-    {
-      title: "Demo Store",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-      date: "8.38 AM",
-      fromUserImg: "/images/user-img-sample.jpg",
-    },
-  ];
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -1292,48 +1165,61 @@ const SlideOverActivity = () => {
                 leaveFrom="translate-x-0"
                 leaveTo="translate-x-full"
               >
-                <Dialog.Panel className="pointer-events-auto w-screen max-w-[350px]">
+                <Dialog.Panel className="pointer-events-auto w-screen max-w-[400px]">
                   <div className="flex h-full flex-col gap-3 overflow-y-auto border-l border-[#323232] bg-[#121212] py-3 shadow-2xl">
                     <div className="px-3">
                       <div className="mb-3 flex items-center gap-2 px-3">
                         <RxActivityLog size={18} />
                         Activity
                       </div>
-                      {itemsExample.map((item, index) => {
-                        const { title, description, date, fromUserImg } = item;
+                      {dataActivity?.length
+                        ? dataActivity.map((item, index) => {
+                            const {
+                              task_name,
+                              task_id,
+                              profile_image,
+                              message,
+                              created_at,
+                            } = item;
 
-                        return (
-                          <div
-                            key={index}
-                            className="cursor-pointer rounded-lg p-3 transition duration-150 ease-in hover:bg-[#232323] active:opacity-80"
-                            onClick={() => {
-                              // TODO: handle this to dynamic
-                              window.slideOverDetail(20);
-                            }}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="text-sm text-[rgba(255,255,255,.9)]">
-                                {title}
+                            return (
+                              <div
+                                key={index}
+                                className="cursor-pointer rounded-lg p-3 transition duration-150 ease-in hover:bg-[#232323] active:opacity-80"
+                                onClick={() => {
+                                  window.slideOverDetail(task_id);
+                                }}
+                              >
+                                <div className="flex items-center gap-2 justify-between">
+                                  <div className="text-sm text-[rgba(255,255,255,.9)] truncate max-w-[150px]">
+                                    {task_name}
+                                  </div>
+                                  <div className="text-xs flex-grow text-right">
+                                    {convertDateWithTime(new Date(created_at))}
+                                  </div>
+                                </div>
+                                <div className="mt-1 flex">
+                                  <div className="mt-0.5">{profile_image?.length ? (
+                                    <img
+                                      className="h-[16px] w-[16px] rounded-full"
+                                      src={profile_image}
+                                      alt=""
+                                    />
+                                  ) : (
+                                    <FaUserCircle className="h-[16px] w-[16px] rounded-full" />
+                                  )}</div>
+                                  <div className="ml-2 max-w-[93%] text-xs">
+                                    <div
+                                      dangerouslySetInnerHTML={{
+                                        __html: message,
+                                      }}
+                                    ></div>
+                                  </div>
+                                </div>
                               </div>
-                              <div className="text-xs">{date}</div>
-                            </div>
-                            <div className="mt-1 flex">
-                              <img
-                                className="h-[16px] w-[16px] rounded-full"
-                                src={fromUserImg}
-                                alt=""
-                              />
-                              <div className="ml-2 max-w-[96%] text-xs">
-                                <div
-                                  dangerouslySetInnerHTML={{
-                                    __html: description,
-                                  }}
-                                ></div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
+                            );
+                          })
+                        : "No one activity found"}
                     </div>
                   </div>
                 </Dialog.Panel>

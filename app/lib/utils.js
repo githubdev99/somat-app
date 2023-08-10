@@ -27,6 +27,18 @@ export const convertDate = (
   }
 ) => date.toLocaleString("en-US", options);
 
+export const convertDateWithTime = (
+  date,
+  options = {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }
+) => date.toLocaleTimeString("en-US", options);
+
 export const convertDateSqlFormat = (date) => {
   let getDate = new Date(date);
 
