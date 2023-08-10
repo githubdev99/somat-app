@@ -6,10 +6,11 @@ export default function Popover({
   children,
   triggerClassName = "flex items-center justify-center",
   positionPanelClassName = "left-1/2 mt-3 -translate-x-1/2 transform",
+  rootClassName = "relative w-full",
   className = "bg-[#313131] p-2",
 }) {
   return (
-    <PopoverElement className="relative w-full">
+    <PopoverElement className={rootClassName}>
       {({ open }) => (
         <>
           <PopoverElement.Button className={triggerClassName}>

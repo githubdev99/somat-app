@@ -1,12 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import classNames from "classnames";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { Global } from "~/components";
 import { MdOutlineAddBox } from "react-icons/md";
-import { GrClose } from "react-icons/gr";
+import { ImCheckboxUnchecked } from "react-icons/im";
+import { FaArrowRight } from "react-icons/fa";
+import { AiOutlineCheck, AiOutlineClose, AiOutlinePause } from "react-icons/ai";
 import { deleteAttribute, updateAttribute } from "~/lib/api";
-import { useLoaderData } from "@remix-run/react";
-import { json } from "@remix-run/node";
+import { IoMdTrash } from "react-icons/io";
 
 export default function Attributes(props) {
   const {
@@ -28,7 +29,7 @@ export default function Attributes(props) {
     const { key, value, id } = props;
 
     let updateDatas = datas.map((data, index) => {
-      const { name, hex_color, ...other } = data;
+      const { name, hex_color, states, ...other } = data;
 
       return id === data.id
         ? {
@@ -37,6 +38,9 @@ export default function Attributes(props) {
               name: key === "name" ? value : name,
               hex_color: key === "hex_color" ? value : hex_color,
               sort_index: index,
+              ...(states && {
+                states: key === "states" ? value : states,
+              }),
             },
           }
         : data;
@@ -170,17 +174,112 @@ export default function Attributes(props) {
               </thead>
               <tbody className="align-middle text-[rgba(255,255,255,.9)]">
                 {datas.map((data, index) => {
-                  const { id, name, hex_color } = data;
+                  const { id, name, hex_color, states } = data;
+
+                  let iconState = null;
+                  let listStateDropdown = [
+                    {
+                      isDisabledLink: true,
+                      onClick: () =>
+                        handleChangeAttribute({
+                          id: id,
+                          key: "states",
+                          value: "NOT_STARTED",
+                        }),
+                      content: (
+                        <div className="flex items-center gap-2 rounded-md bg-[rgba(18,18,18,1)] px-2 py-0.5">
+                          <ImCheckboxUnchecked size={18} /> NOT STARTED
+                        </div>
+                      ),
+                      isInnerHTML: false,
+                    },
+                    {
+                      isDisabledLink: true,
+                      onClick: () =>
+                        handleChangeAttribute({
+                          id: id,
+                          key: "states",
+                          value: "STARTED",
+                        }),
+                      content: (
+                        <div className="flex items-center gap-2 rounded-md bg-[rgba(18,18,18,1)] px-2 py-0.5">
+                          <FaArrowRight size={18} /> STARTED
+                        </div>
+                      ),
+                      isInnerHTML: false,
+                    },
+                    {
+                      isDisabledLink: true,
+                      onClick: () =>
+                        handleChangeAttribute({
+                          id: id,
+                          key: "states",
+                          value: "CANCELED",
+                        }),
+                      content: (
+                        <div className="flex items-center gap-2 rounded-md bg-[rgba(18,18,18,1)] px-2 py-0.5">
+                          <AiOutlineClose size={18} /> CANCELED
+                        </div>
+                      ),
+                      isInnerHTML: false,
+                    },
+                    {
+                      isDisabledLink: true,
+                      onClick: () =>
+                        handleChangeAttribute({
+                          id: id,
+                          key: "states",
+                          value: "BLOCKED",
+                        }),
+                      content: (
+                        <div className="flex items-center gap-2 rounded-md bg-[rgba(18,18,18,1)] px-2 py-0.5">
+                          <AiOutlinePause size={18} /> BLOCKED
+                        </div>
+                      ),
+                      isInnerHTML: false,
+                    },
+                    {
+                      isDisabledLink: true,
+                      onClick: () =>
+                        handleChangeAttribute({
+                          id: id,
+                          key: "states",
+                          value: "FINISHED",
+                        }),
+                      content: (
+                        <div className="flex items-center gap-2 rounded-md bg-[rgba(18,18,18,1)] px-2 py-0.5">
+                          <AiOutlineCheck size={18} /> FINISHED
+                        </div>
+                      ),
+                      isInnerHTML: false,
+                    },
+                  ];
+
+                  if (states === "NOT_STARTED") {
+                    iconState = <ImCheckboxUnchecked size={18} />;
+                  } else if (states === "STARTED") {
+                    iconState = <FaArrowRight size={18} />;
+                  } else if (states === "CANCELED") {
+                    iconState = <AiOutlineClose size={18} />;
+                  } else if (states === "BLOCKED") {
+                    iconState = <AiOutlinePause size={18} />;
+                  } else if (states === "FINISHED") {
+                    iconState = <AiOutlineCheck size={18} />;
+                  }
 
                   return (
                     <tr key={index}>
-                      <td className="flex w-[400px] gap-2 py-2 pr-3">
+                      <td
+                        className={`flex gap-2 py-2 pr-3 ${
+                          clickedNavId === "status" ? "w-[450px]" : "w-[350px]"
+                        }`}
+                      >
                         {is_owner && (
                           <div
                             className="flex cursor-pointer items-center justify-center rounded-md bg-[#FE5E85] px-2 py-1.5 text-[rgba(255,255,255,.9)] shadow-sm transition duration-150 ease-in hover:opacity-80 active:bg-[#db5173]"
                             onClick={() => handleDeleteAttribute(id, name)}
                           >
-                            <GrClose size={16} />
+                            <IoMdTrash size={16} />
                           </div>
                         )}
                         <input
@@ -191,9 +290,9 @@ export default function Attributes(props) {
                           defaultValue={name}
                           className={`block w-full rounded-md border-0 bg-transparent px-2 py-1 shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6`}
                           style={{ color: hex_color }}
-                          {...!is_owner && {
+                          {...(!is_owner && {
                             disabled: true,
-                          }}
+                          })}
                           onChange={(e) =>
                             handleChangeAttribute({
                               id: id,
@@ -213,6 +312,7 @@ export default function Attributes(props) {
                               </div>
                             }
                             positionPanelClassName="top-0 ml-10"
+                            rootClassName="relative"
                           >
                             <Global.ColorPicker
                               color={hex_color}
@@ -233,6 +333,18 @@ export default function Attributes(props) {
                             ></div>
                           </div>
                         )}
+                        {states ? (
+                          <Global.Dropdown
+                            items={listStateDropdown}
+                            fullWidth={true}
+                            forceOverlap={true}
+                            className="block w-full rounded-md border-0 bg-transparent px-2 py-1 shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+                          >
+                            <div className="flex items-center gap-2 rounded-md bg-[rgba(18,18,18,1)] px-2 py-0.5">
+                              {iconState} {String(states).replaceAll("_", " ")}
+                            </div>
+                          </Global.Dropdown>
+                        ) : null}
                       </td>
                     </tr>
                   );
@@ -254,7 +366,7 @@ export default function Attributes(props) {
                   type="button"
                   color="outlined-secondary"
                   size="sm"
-                  className="ml-40"
+                  className={clickedNavId === "status" ? "ml-64" : "ml-36"}
                   onClick={handleSubmit}
                 >
                   Save

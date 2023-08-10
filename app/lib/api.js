@@ -453,3 +453,58 @@ export const getAllUsersWorkspace = async (workspace_id, token) => {
     .then((result) => result)
     .catch((error) => error);
 };
+
+export const addTask = async (payload, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Content-Type", "application/json");
+  myHeaders.append("Authorization", token);
+
+  var raw = JSON.stringify(payload);
+
+  var requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: raw,
+    redirect: "follow",
+  };
+
+  return await fetch(`${window.ENV.API_URL}/task`, requestOptions)
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};
+
+export const getAllTask = async (query, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Authorization", token);
+
+  var requestOptions = {
+    method: "GET",
+    headers: myHeaders,
+    redirect: "follow",
+  };
+
+  return await fetch(
+    `${window.ENV.API_URL}/task?${new URLSearchParams(query).toString()}`,
+    requestOptions
+  )
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};
+
+export const getOneTask = async (id, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Authorization", token);
+
+  var requestOptions = {
+    method: "GET",
+    headers: myHeaders,
+    redirect: "follow",
+  };
+
+  return await fetch(`${window.ENV.API_URL}/task/${id}`, requestOptions)
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};

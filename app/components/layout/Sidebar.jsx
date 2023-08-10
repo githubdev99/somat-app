@@ -8,12 +8,9 @@ import { GoPencil } from "react-icons/go";
 import { BiLockAlt } from "react-icons/bi";
 import { CgAssign } from "react-icons/cg";
 import { RiUserAddLine } from "react-icons/ri";
+import { RxActivityLog } from "react-icons/rx";
 import { BsFillCaretRightFill, BsPersonWorkspace } from "react-icons/bs";
-import {
-  ICON_COLLAPSIBLE_ROTATE,
-  VISIBLE,
-  VISIBLE_CUSTOM,
-} from "~/lib/animation";
+import { ICON_COLLAPSIBLE_ROTATE } from "~/lib/animation";
 import { Fragment, useContext, useEffect, useState } from "react";
 import classNames from "classnames";
 import { Dialog, Transition } from "@headlessui/react";
@@ -76,6 +73,8 @@ function SidebarWrapper(props) {
     setSelectedWorkspaceId,
     dataList,
     handleSelectedList,
+    clickedNavId,
+    setClickedNavId,
   } = useContext(Global.RootContext);
 
   const { id: workspaceSelectedId, name: workspaceSelectedName } =
@@ -88,7 +87,6 @@ function SidebarWrapper(props) {
   let isAuthPage = slug && String(slug).includes("auth");
 
   const [isOpenCollapsible, setIsOpenCollapsible] = useState(!isAuthPage);
-  const [clickedNavId, setClickedNavId] = useState(slug || "");
   const [isWorkspaceSelectedChanged, setIsWorkspaceSelectedChanged] =
     useState(false);
   const [onMouseHoverList, setOnMouseHoverList] = useState(null);
@@ -99,10 +97,6 @@ function SidebarWrapper(props) {
       setIsWorkspaceSelectedChanged(false);
     }, 1);
   }, [dataWorkspaceSelected]);
-
-  useEffect(() => {
-    setClickedNavId(slug);
-  }, [slug]);
 
   useEffect(() => {
     if (dataList?.length) setIsOpenCollapsible(true);
@@ -262,6 +256,13 @@ function SidebarWrapper(props) {
           <ul className="flex flex-1 flex-col gap-y-2">
             <li>
               <ul className="-mx-2 space-y-1">
+                <li
+                  className="mb-4 mt-1 flex cursor-pointer flex-row items-center gap-2 rounded-lg px-3 py-1 transition duration-150 ease-in hover:bg-[#232323] focus:outline-none active:opacity-80"
+                  onClick={() => window.slideOverActivity()}
+                >
+                  <RxActivityLog size={18} />
+                  Activity
+                </li>
                 {defaultNavs.map((item, index) => {
                   const { id, url, content } = item;
 

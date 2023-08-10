@@ -1,22 +1,29 @@
 import classNames from "classnames";
 import { useEffect, useState } from "react";
 import DatepickerElement from "tailwind-datepicker-react";
+import { convertDateSqlFormat } from "~/lib/utils";
 
-export default function Datepicker({ inputClassName, ...otherProps }) {
+export default function Datepicker({
+  inputClassName,
+  datepickerClassName = "top-5",
+  onChange,
+  defaultValue = "",
+  ...otherProps
+}) {
   const [show, setShow] = useState(false);
   const [isChanged, setIsChanged] = useState(false);
+
   const handleChange = (selectedDate) => {
     setIsChanged(true);
     setTimeout(() => {
       setIsChanged(false);
     }, 1);
-    console.log(selectedDate);
+
+    onChange(convertDateSqlFormat(selectedDate));
   };
   const handleClose = (state) => {
     setShow(state);
   };
-
-  const classes = classNames();
 
   const options = {
     autoHide: true,
@@ -34,8 +41,11 @@ export default function Datepicker({ inputClassName, ...otherProps }) {
       selected:
         "bg-white/80 !text-[rgba(0,0,0,0.9)] hover:!bg-white/50 active:!bg-slate-500",
     },
-    datepickerClassNames: "top-5",
+    datepickerClassNames: datepickerClassName,
     language: "en",
+    ...(defaultValue && {
+      defaultDate: new Date(defaultValue),
+    }),
   };
 
   useEffect(() => {

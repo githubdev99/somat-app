@@ -19,7 +19,10 @@ import tailwindStylesheetUrl from "~/styles/tailwind.css";
 import customStylesheetUrl from "~/styles/custom.css";
 import { Global } from "~/components";
 import {
+  getAllAttribute,
   getAllList,
+  getAllTask,
+  getAllUsersWorkspace,
   getAllWorkspace,
   getOneList,
   getOneWorkspace,
@@ -33,16 +36,19 @@ export const links = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
 ];
 
-export const loader = async ({ request }) => {
+export const loader = async ({ params }) => {
   return json({
     ENV: {
       API_URL: process.env.API_URL,
     },
+    params,
   });
 };
 
 export default function App() {
   const data = useLoaderData();
+  const { params } = data || {};
+  const { slug } = params || {};
 
   const [token, setToken] = useState(null);
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState(null);
@@ -51,6 +57,18 @@ export default function App() {
   const [dataWorkspaceSelected, setDataWorkspaceSelected] = useState(null);
   const [dataList, setDataList] = useState(null);
   const [dataListSelected, setDataListSelected] = useState(false);
+  const [dataAssignees, setDataAssignees] = useState([]);
+  const [dataTask, setDataTask] = useState([]);
+  const [clickedNavId, setClickedNavId] = useState(slug || "");
+  const [dataTaskStatus, setDataTaskStatus] = useState([]);
+  const [dataTaskPriority, setDataTaskPriority] = useState([]);
+  const [dataTaskProject, setDataTaskProject] = useState([]);
+  const [taskStatusDropdown, setTaskStatusDropdown] = useState([]);
+  const [taskPriorityDropdown, setTaskPriorityDropdown] = useState([]);
+  const [taskProjectDropdown, setTaskProjectDropdown] = useState([]);
+  const [taskStatusSelected, setTaskStatusSelected] = useState({});
+  const [taskPrioritySelected, setTaskPrioritySelected] = useState({});
+  const [taskProjectSelected, setTaskProjectSelected] = useState({});
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -128,6 +146,141 @@ export default function App() {
     setDataListSelected(response?.data);
   };
 
+  const handleDataAssignees = async (workspaceId) => {
+    const response = await getAllUsersWorkspace(
+      workspaceId,
+      localStorage.getItem("token")
+    );
+
+    if (response?.status?.code !== 200) return;
+
+    setDataAssignees(response?.data);
+  };
+
+  const handleDataTask = async (query) => {
+    const response = await getAllTask(query, localStorage.getItem("token"));
+
+    if (response?.status?.code !== 200) return;
+
+    setDataTask(response?.data);
+  };
+
+  const handleDataTaskStatus = async (workspaceId) => {
+    const response = await getAllAttribute(
+      "status",
+      workspaceId,
+      localStorage.getItem("token")
+    );
+
+    if (response?.status?.code !== 200) return;
+
+    setDataTaskStatus(response?.data);
+    setTaskStatusDropdown([
+      ...response?.data?.map((taskStatus) => {
+        const { name, hex_color, states } = taskStatus;
+
+        if (states === "NOT_STARTED") setTaskStatusSelected(taskStatus);
+
+        return {
+          isDisabledLink: true,
+          onClick: () => setTaskStatusSelected(taskStatus),
+          content: <Global.Badge text={name} hexColor={hex_color} />,
+          isInnerHTML: false,
+        };
+      }),
+      ...[
+        {
+          url: "/settings/attributes?tab=status",
+          content: "Configure Statuses...",
+          isInnerHTML: true,
+          isBottomLink: true,
+        },
+      ],
+    ]);
+    if (response?.length && !Object.keys(taskStatusSelected).length)
+      setTaskStatusSelected(response[0]);
+  };
+
+  const handleDataTaskPriority = async (workspaceId) => {
+    const response = await getAllAttribute(
+      "priority",
+      workspaceId,
+      localStorage.getItem("token")
+    );
+
+    if (response?.status?.code !== 200) return;
+
+    setDataTaskPriority(response?.data);
+    setTaskPriorityDropdown([
+      ...[
+        {
+          isDisabledLink: true,
+          onClick: () => setTaskPrioritySelected({}),
+          content: <span className="text-[rgba(255,255,255,.9)]">None</span>,
+          isInnerHTML: false,
+        },
+      ],
+      ...response?.data?.map((taskPriority) => {
+        const { name, hex_color } = taskPriority;
+
+        return {
+          isDisabledLink: true,
+          onClick: () => setTaskPrioritySelected(taskPriority),
+          content: <span style={{ color: hex_color }}>{name}</span>,
+          isInnerHTML: false,
+        };
+      }),
+      ...[
+        {
+          url: "/settings/attributes?tab=priority",
+          content: "Configure Priorities...",
+          isInnerHTML: true,
+          isBottomLink: true,
+        },
+      ],
+    ]);
+  };
+
+  const handleDataTaskProject = async (workspaceId) => {
+    const response = await getAllAttribute(
+      "project",
+      workspaceId,
+      localStorage.getItem("token")
+    );
+
+    if (response?.status?.code !== 200) return;
+
+    setDataTaskProject(response?.data);
+    setTaskProjectDropdown([
+      ...[
+        {
+          isDisabledLink: true,
+          onClick: () => setTaskProjectSelected({}),
+          content: <span className="text-[rgba(255,255,255,.9)]">None</span>,
+          isInnerHTML: false,
+        },
+      ],
+      ...response?.data?.map((taskProject) => {
+        const { name, hex_color } = taskProject;
+
+        return {
+          isDisabledLink: true,
+          onClick: () => setTaskProjectSelected(taskProject),
+          content: <span style={{ color: hex_color }}>{name}</span>,
+          isInnerHTML: false,
+        };
+      }),
+      ...[
+        {
+          url: "/settings/attributes?tab=project",
+          content: "Configure Projects...",
+          isInnerHTML: true,
+          isBottomLink: true,
+        },
+      ],
+    ]);
+  };
+
   useEffect(() => {
     handleToken();
 
@@ -142,6 +295,10 @@ export default function App() {
     handleDataWorkspace();
     handleDataList(localStorage.getItem("selectedWorkspaceId"));
     handleSelectedWorkspace(localStorage.getItem("selectedWorkspaceId"));
+    handleDataAssignees(localStorage.getItem("selectedWorkspaceId"));
+    handleDataTaskStatus(localStorage.getItem("selectedWorkspaceId"));
+    handleDataTaskPriority(localStorage.getItem("selectedWorkspaceId"));
+    handleDataTaskProject(localStorage.getItem("selectedWorkspaceId"));
   }, [token]);
 
   useEffect(() => {
@@ -157,7 +314,57 @@ export default function App() {
 
     handleDataList(selectedId);
     handleSelectedWorkspace(selectedId);
+    handleDataAssignees(selectedId);
+    handleDataTaskStatus(selectedId);
+    handleDataTaskPriority(selectedId);
+    handleDataTaskProject(selectedId);
   }, [selectedWorkspaceId]);
+
+  useEffect(() => {
+    setClickedNavId(slug);
+  }, [slug]);
+
+  useEffect(() => {
+    if (
+      !localStorage.getItem("token") &&
+      !localStorage.getItem("selectedWorkspaceId")
+    )
+      return;
+
+    const selectedId = selectedWorkspaceId
+      ? selectedWorkspaceId
+      : localStorage.getItem("selectedWorkspaceId");
+
+    const isDefaultPage =
+      clickedNavId &&
+      ["inbox", "draft", "assigned", "created", "private", "trash"].includes(
+        clickedNavId
+      );
+
+    handleDataTask({
+      workspace_id: selectedId,
+      ...(clickedNavId === "draft" && {
+        is_draft: 1,
+      }),
+      ...(clickedNavId === "assigned" && {
+        is_assigned: 1,
+      }),
+      ...(clickedNavId === "created" && {
+        is_created: 1,
+      }),
+      ...(clickedNavId === "private" && {
+        is_private_task: 1,
+      }),
+      ...(clickedNavId === "trash" && {
+        is_trash: 1,
+      }),
+      ...(!isDefaultPage && dataListSelected?.id
+        ? {
+            list_id: dataListSelected.id,
+          }
+        : {}),
+    });
+  }, [clickedNavId, selectedWorkspaceId, dataListSelected]);
 
   return (
     <html lang="en" className="h-full">
@@ -177,6 +384,18 @@ export default function App() {
             dataWorkspaceSelected,
             dataList,
             dataListSelected,
+            dataAssignees,
+            dataTaskStatus,
+            dataTaskPriority,
+            dataTaskProject,
+            dataTask,
+            clickedNavId,
+            taskStatusDropdown,
+            taskPriorityDropdown,
+            taskProjectDropdown,
+            taskStatusSelected,
+            taskPrioritySelected,
+            taskProjectSelected,
             setToken,
             setSelectedWorkspaceId,
             handleDataProfile,
@@ -185,6 +404,12 @@ export default function App() {
             handleSelectedWorkspace,
             handleDataList,
             handleSelectedList,
+            handleDataTaskStatus,
+            handleDataTaskPriority,
+            handleDataTaskProject,
+            handleDataTask,
+            setClickedNavId,
+            setTaskProjectSelected,
           }}
         >
           <Global.ToastNotification />

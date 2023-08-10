@@ -2,17 +2,25 @@
 import * as Form from "@radix-ui/react-form";
 import { json } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
-import { useContext, useEffect, useState } from "react";
+import { Fragment, useContext, useEffect, useState } from "react";
 import { Global, Layout, Task } from "~/components";
 import { HiOutlineArrowLeft } from "react-icons/hi";
-import { RxCross2 } from "react-icons/rx";
-import { Dialog } from "@headlessui/react";
+import { RxActivityLog, RxCross2 } from "react-icons/rx";
+import { Dialog, Transition } from "@headlessui/react";
 import { AiOutlinePlus } from "react-icons/ai";
 import { GoPencil } from "react-icons/go";
-import { IoTrashBin } from "react-icons/io5";
+import { IoTrashBin, IoNewspaperOutline, IoSend } from "react-icons/io5";
+import { FaUserCircle, FaRegBellSlash } from "react-icons/fa";
+import { BsThreeDots, BsChat } from "react-icons/bs";
 import { register, login, addWorkspace } from "~/lib/api";
 import { convertDate } from "~/lib/utils";
-import { addList, deleteList, getAllAttribute, updateList } from "../lib/api";
+import {
+  addList,
+  addTask,
+  deleteList,
+  getAllAttribute,
+  updateList,
+} from "../lib/api";
 
 export const meta = () => [{ title: "Somat App" }];
 
@@ -26,53 +34,6 @@ export default function Index() {
   const { slug } = params || {};
 
   const [authComponent, setAuthComponent] = useState("auth");
-  const [dataTaskStatus, setDataTaskStatus] = useState([]);
-  const [dataTaskPriority, setDataTaskPriority] = useState([]);
-  const [dataTaskProject, setDataTaskProject] = useState([]);
-
-  const handleDataTaskStatus = async () => {
-    const response = await getAllAttribute(
-      "status",
-      localStorage.getItem("selectedWorkspaceId"),
-      localStorage.getItem("token")
-    );
-
-    if (response?.status?.code !== 200) return;
-
-    setDataTaskStatus(response?.data);
-  };
-
-  const handleDataTaskPriority = async () => {
-    const response = await getAllAttribute(
-      "priority",
-      localStorage.getItem("selectedWorkspaceId"),
-      localStorage.getItem("token")
-    );
-
-    if (response?.status?.code !== 200) return;
-
-    setDataTaskPriority(response?.data);
-  };
-
-  const handleDataTaskProject = async () => {
-    const response = await getAllAttribute(
-      "project",
-      localStorage.getItem("selectedWorkspaceId"),
-      localStorage.getItem("token")
-    );
-
-    if (response?.status?.code !== 200) return;
-
-    setDataTaskProject(response?.data);
-  };
-
-  useEffect(() => {
-    if (!(slug && String(slug).includes("auth"))) {
-      handleDataTaskStatus();
-      handleDataTaskPriority();
-      handleDataTaskProject();
-    }
-  }, [slug]);
 
   const components = {
     auth: <AuthComponent setComponent={setAuthComponent} />,
@@ -96,14 +57,11 @@ export default function Index() {
         </Global.Modal>
       ) : (
         <>
-          <ModalAddTask
-            dataTaskStatus={dataTaskStatus}
-            dataTaskPriority={dataTaskPriority}
-            dataTaskProject={dataTaskProject}
-          />
+          <ModalAddTask />
           <ModalAddList />
           <ModalAddWorkspace />
           <Task.SlideOverDetail />
+          <SlideOverActivity />
         </>
       )}
       <Layout.Container>
@@ -504,7 +462,7 @@ const ModalAddWorkspace = () => {
   return (
     <Global.Modal
       open={openAddModal}
-      setOpen={setOpenModal}
+      setOpen={() => {}}
       positionClassName="inset-x-0 top-3"
       size="sm"
     >
@@ -667,7 +625,7 @@ const ModalAddList = () => {
   return (
     <Global.Modal
       open={openModal}
-      setOpen={setOpenModal}
+      setOpen={() => {}}
       positionClassName="inset-x-0 top-3"
       size="md"
     >
@@ -757,15 +715,26 @@ const ModalAddList = () => {
   );
 };
 
-const ModalAddTask = (props) => {
-  const { dataTaskStatus, dataTaskPriority, dataTaskProject } = props;
-
-  const { dataProfile, dataList } = useContext(Global.RootContext);
+const ModalAddTask = () => {
+  const {
+    dataProfile,
+    dataList,
+    dataAssignees,
+    taskStatusSelected,
+    taskPrioritySelected,
+    taskProjectSelected,
+    taskPriorityDropdown,
+    taskProjectDropdown,
+    handleDataTask,
+    clickedNavId,
+    dataListSelected,
+    setTaskProjectSelected,
+    handleDataTaskStatus,
+    handleDataTaskPriority,
+    handleDataTaskProject,
+  } = useContext(Global.RootContext);
 
   const [openModal, setOpenModal] = useState(false);
-  const [taskStatusDropdown, setTaskStatusDropdown] = useState([]);
-  const [taskPriorityDropdown, setTaskPriorityDropdown] = useState([]);
-  const [taskProjectDropdown, setTaskProjectDropdown] = useState([]);
   const [listDropdown, setListDropdown] = useState([]);
 
   // Payload States
@@ -773,24 +742,96 @@ const ModalAddTask = (props) => {
   const [description, setDescription] = useState(null);
   const [dueDate, setDueDate] = useState(null);
   const [listSelected, setListSelected] = useState({});
-  const [taskStatusSelected, setTaskStatusSelected] = useState({});
-  const [taskPrioritySelected, setTaskPrioritySelected] = useState({});
-  const [taskProjectSelected, setTaskProjectSelected] = useState({});
+  const [assigneesSelected, setAssigneesSelected] = useState({});
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("name", name);
-    console.log("description", description);
-    console.log("dueDate", dueDate);
-    console.log("listSelected", listSelected);
-    console.log("taskStatusSelected", taskStatusSelected);
-    console.log("taskPrioritySelected", taskPrioritySelected);
-    console.log("taskProjectSelected", taskProjectSelected);
+    if (!name) {
+      window.showToastNotification({
+        type: "failed",
+        title: "Info!",
+        message: "Task name is required",
+      });
+
+      return;
+    }
+
+    if (!assigneesSelected?.id) {
+      window.showToastNotification({
+        type: "failed",
+        title: "Info!",
+        message: "Please choose assignees",
+      });
+
+      return;
+    }
+
+    const response = await addTask(
+      {
+        name,
+        description,
+        due_date: dueDate,
+        list_id: listSelected.id,
+        task_status_id: taskStatusSelected.id,
+        user_id: dataProfile.id,
+        assignees_user_id: assigneesSelected.id,
+        workspace_id: Number(localStorage.getItem("selectedWorkspaceId")),
+        ...(taskPrioritySelected?.id && {
+          task_priority_id: taskPrioritySelected.id,
+        }),
+        ...(taskProjectSelected?.id && {
+          task_project_id: taskProjectSelected.id,
+        }),
+      },
+      localStorage.getItem("token")
+    );
+
+    const { code, message } = response?.status || {};
+
+    window.showToastNotification({
+      type: code === 200 ? "success" : "failed",
+      title: code === 200 ? "Success!" : "Failed!",
+      message: message,
+    });
+
+    if (code === 200) setOpenModal(false);
+
+    const isDefaultPage =
+      clickedNavId &&
+      ["inbox", "draft", "assigned", "created", "private", "trash"].includes(
+        clickedNavId
+      );
+
+    await handleDataTask({
+      workspace_id: localStorage.getItem("selectedWorkspaceId"),
+      ...(clickedNavId === "draft" && {
+        is_draft: 1,
+      }),
+      ...(clickedNavId === "assigned" && {
+        is_assigned: 1,
+      }),
+      ...(clickedNavId === "created" && {
+        is_created: 1,
+      }),
+      ...(clickedNavId === "private" && {
+        is_private_task: 1,
+      }),
+      ...(clickedNavId === "trash" && {
+        is_trash: 1,
+      }),
+      ...(!isDefaultPage && dataListSelected?.id
+        ? {
+            list_id: dataListSelected.id,
+          }
+        : {}),
+    });
   };
 
   useEffect(() => {
-    window.addTaskModal = () => {
+    window.addTaskModal = (props) => {
+      const { taskProject } = props || {};
+
       if (!dataList?.length) {
         window.showToastNotification({
           type: "failed",
@@ -801,106 +842,41 @@ const ModalAddTask = (props) => {
         return;
       }
 
+      setTaskProjectSelected(taskProject && taskProject?.id ? taskProject : {});
+
       setOpenModal(true);
-      setTaskStatusDropdown([
-        ...dataTaskStatus?.map((taskStatus, index) => {
-          const { name, hex_color } = taskStatus;
-
-          if (!index) setTaskStatusSelected(taskStatus);
-
-          return {
-            isDisabledLink: true,
-            onClick: () => setTaskStatusSelected(taskStatus),
-            content: <Global.Badge text={name} hexColor={hex_color} />,
-            isInnerHTML: false,
-          };
-        }),
-        ...[
-          {
-            url: "/settings/attributes?tab=status",
-            content: "Configure Statuses...",
-            isInnerHTML: true,
-            isBottomLink: true,
-          },
-        ],
-      ]);
-      setTaskPriorityDropdown([
-        ...[
-          {
-            isDisabledLink: true,
-            onClick: () => setTaskPrioritySelected({}),
-            content: <span className="text-[rgba(255,255,255,.9)]">None</span>,
-            isInnerHTML: false,
-          },
-        ],
-        ...dataTaskPriority?.map((taskPriority) => {
-          const { name, hex_color } = taskPriority;
-
-          return {
-            isDisabledLink: true,
-            onClick: () => setTaskPrioritySelected(taskPriority),
-            content: <span style={{ color: hex_color }}>{name}</span>,
-            isInnerHTML: false,
-          };
-        }),
-        ...[
-          {
-            url: "/settings/attributes?tab=priority",
-            content: "Configure Priorities...",
-            isInnerHTML: true,
-            isBottomLink: true,
-          },
-        ],
-      ]);
-      setTaskProjectDropdown([
-        ...[
-          {
-            isDisabledLink: true,
-            onClick: () => setTaskProjectSelected({}),
-            content: <span className="text-[rgba(255,255,255,.9)]">None</span>,
-            isInnerHTML: false,
-          },
-        ],
-        ...dataTaskProject?.map((taskProject) => {
-          const { name, hex_color } = taskProject;
-
-          return {
-            isDisabledLink: true,
-            onClick: () => setTaskProjectSelected(taskProject),
-            content: <span style={{ color: hex_color }}>{name}</span>,
-            isInnerHTML: false,
-          };
-        }),
-        ...[
-          {
-            url: "/settings/attributes?tab=project",
-            content: "Configure Projects...",
-            isInnerHTML: true,
-            isBottomLink: true,
-          },
-        ],
-      ]);
-      setListDropdown(
-        dataList?.map((list, index) => {
-          const { name, hex_color } = list;
-
-          if (!index) setListSelected(list);
-
-          return {
-            isDisabledLink: true,
-            onClick: () => setListSelected(list),
-            content: <span style={{ color: hex_color }}>{name}</span>,
-            isInnerHTML: false,
-          };
-        })
-      );
     };
-  }, [dataList]);
+  }, [dataList, dataAssignees]);
+
+  useEffect(() => {
+    if (!openModal) return;
+
+    if (dataListSelected?.id) setListSelected(dataListSelected);
+
+    setListDropdown(
+      dataList?.map((list, index) => {
+        const { name, hex_color } = list;
+
+        if (!index && !dataListSelected?.id) setListSelected(list);
+
+        return {
+          isDisabledLink: true,
+          onClick: () => setListSelected(list),
+          content: <span style={{ color: hex_color }}>{name}</span>,
+          isInnerHTML: false,
+        };
+      })
+    );
+
+    handleDataTaskStatus(localStorage.getItem("selectedWorkspaceId"));
+    handleDataTaskPriority(localStorage.getItem("selectedWorkspaceId"));
+    handleDataTaskProject(localStorage.getItem("selectedWorkspaceId"));
+  }, [openModal]);
 
   return (
     <Global.Modal
       open={openModal}
-      setOpen={setOpenModal}
+      setOpen={() => {}}
       size="custom"
       positionClassName="inset-x-0 top-3"
       panelClassName="max-w-[800px]"
@@ -936,21 +912,14 @@ const ModalAddTask = (props) => {
                 <tr>
                   <td className="h-[31px] w-[120px]">Status</td>
                   <td className="w-[203px]">
-                    <Global.Dropdown
-                      items={taskStatusDropdown}
-                      fullWidth={true}
-                      forceOverlap={true}
-                      className="w-full rounded-lg px-3 py-0.5 transition duration-100 ease-in hover:bg-[#414141]"
-                      menuItemsClassName="left-0 max-h-[180px] overflow-y-auto"
-                      menuButtonClassName="focus-visible:outline-none"
-                    >
+                    <div className="w-full rounded-lg px-3 py-0.5 transition duration-100 ease-in">
                       {Object.keys(taskStatusSelected).length ? (
                         <Global.Badge
                           text={taskStatusSelected.name}
                           hexColor={taskStatusSelected.hex_color}
                         />
                       ) : null}
-                    </Global.Dropdown>
+                    </div>
                   </td>
                   <td className="h-[31px] w-[120px] pl-2">Created At</td>
                   <td className="text-[#EAEAEA]">
@@ -968,54 +937,67 @@ const ModalAddTask = (props) => {
                   <td className="h-[31px] w-[120px]">Assignees</td>
                   <td className="w-[203px]">
                     <Global.Dropdown
-                      items={[
-                        {
+                      items={dataAssignees?.map((assignees) => {
+                        const { first_name, profile_image } = assignees;
+
+                        return {
                           url: "#",
+                          onClick: () => setAssigneesSelected(assignees),
                           content: (
                             <div className="flex items-center">
                               <div className="h-[22px] w-[22px] flex-shrink-0">
-                                <img
-                                  className="h-[22px] w-[22px] rounded-full"
-                                  src="/images/user-img-sample.jpg"
-                                  alt=""
-                                />
+                                {profile_image ? (
+                                  <img
+                                    className="h-[22px] w-[22px] rounded-full"
+                                    src={profile_image}
+                                    alt=""
+                                  />
+                                ) : (
+                                  <FaUserCircle className="h-[22px] w-[22px] rounded-full" />
+                                )}
                               </div>
-                              <div className="ml-2">Devan</div>
+                              <div className="ml-2">{first_name}</div>
                             </div>
                           ),
                           isInnerHTML: false,
-                        },
-                        {
-                          url: "#",
-                          content: (
-                            <div className="flex items-center">
-                              <div className="h-[22px] w-[22px] flex-shrink-0">
-                                <img
-                                  className="h-[22px] w-[22px] rounded-full"
-                                  src="/images/user-img-sample.jpg"
-                                  alt=""
-                                />
-                              </div>
-                              <div className="ml-2">Rizky</div>
-                            </div>
-                          ),
-                          isInnerHTML: false,
-                        },
-                      ]}
+                        };
+                      })}
                       fullWidth={true}
                       forceOverlap={true}
                       className="w-full rounded-lg px-3 py-0.5 transition duration-100 ease-in hover:bg-[#414141]"
                       menuItemsClassName="left-0 max-h-[180px] overflow-y-auto"
                       menuButtonClassName="min-h-[25px]"
                     >
-                      <span className="px-1">Assign...</span>
+                      {Object.keys(assigneesSelected).length ? (
+                        <div className="flex items-center px-1 pt-1">
+                          <div className="h-[22px] w-[22px] flex-shrink-0">
+                            {assigneesSelected.profile_image ? (
+                              <img
+                                className="h-[22px] w-[22px] rounded-full"
+                                src={assigneesSelected.profile_image}
+                                alt=""
+                              />
+                            ) : (
+                              <FaUserCircle className="h-[22px] w-[22px] rounded-full" />
+                            )}
+                          </div>
+                          <div className="ml-2">
+                            {assigneesSelected.first_name}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="px-1">Assign...</span>
+                      )}
                     </Global.Dropdown>
                   </td>
                   <td className="h-[31px] w-[120px] pl-2">Due Date</td>
                   <td className="text-[#EAEAEA]">
                     <div className="min-h-[25px] w-full rounded-lg text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141]">
                       <div className="px-1">
-                        <Global.Datepicker inputClassName="!px-3 !py-0.5" />
+                        <Global.Datepicker
+                          onChange={(value) => setDueDate(value)}
+                          inputClassName="!px-3 !py-0.5"
+                        />
                       </div>
                     </div>
                   </td>
@@ -1148,5 +1130,218 @@ const ModalAddTask = (props) => {
         </div>
       </Form.Root>
     </Global.Modal>
+  );
+};
+
+const SlideOverActivity = () => {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    window.slideOverActivity = () => {
+      setOpen(true);
+    };
+  }, []);
+
+  const itemsExample = [
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+    {
+      title: "Demo Store",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      date: "8.38 AM",
+      fromUserImg: "/images/user-img-sample.jpg",
+    },
+  ];
+
+  return (
+    <Transition.Root show={open} as={Fragment}>
+      <Dialog
+        as="div"
+        className="relative z-[9999] text-[14px] text-[#B3B3B3]"
+        onClose={setOpen}
+      >
+        <div className="fixed inset-0" />
+
+        <div className="fixed inset-0 overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+              <Transition.Child
+                as={Fragment}
+                enter="transform transition ease-in-out duration-500 sm:duration-700"
+                enterFrom="translate-x-full"
+                enterTo="translate-x-0"
+                leave="transform transition ease-in-out duration-500 sm:duration-700"
+                leaveFrom="translate-x-0"
+                leaveTo="translate-x-full"
+              >
+                <Dialog.Panel className="pointer-events-auto w-screen max-w-[350px]">
+                  <div className="flex h-full flex-col gap-3 overflow-y-auto border-l border-[#323232] bg-[#121212] py-3 shadow-2xl">
+                    <div className="px-3">
+                      <div className="mb-3 flex items-center gap-2 px-3">
+                        <RxActivityLog size={18} />
+                        Activity
+                      </div>
+                      {itemsExample.map((item, index) => {
+                        const { title, description, date, fromUserImg } = item;
+
+                        return (
+                          <div
+                            key={index}
+                            className="cursor-pointer rounded-lg p-3 transition duration-150 ease-in hover:bg-[#232323] active:opacity-80"
+                            onClick={() => {
+                              // TODO: handle this to dynamic
+                              window.slideOverDetail(20);
+                            }}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm text-[rgba(255,255,255,.9)]">
+                                {title}
+                              </div>
+                              <div className="text-xs">{date}</div>
+                            </div>
+                            <div className="mt-1 flex">
+                              <img
+                                className="h-[16px] w-[16px] rounded-full"
+                                src={fromUserImg}
+                                alt=""
+                              />
+                              <div className="ml-2 max-w-[96%] text-xs">
+                                <div
+                                  dangerouslySetInnerHTML={{
+                                    __html: description,
+                                  }}
+                                ></div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </div>
+      </Dialog>
+    </Transition.Root>
   );
 };

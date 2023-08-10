@@ -1,12 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { color, motion } from "framer-motion";
-import { Global, Task } from "~/components";
+import { Global } from "~/components";
 import { BsThreeDots } from "react-icons/bs";
-import classNames from "classnames";
-import { Fragment, useContext, useEffect, useState } from "react";
-import { Menu, Transition } from "@headlessui/react";
+import { Fragment, useContext, useEffect } from "react";
 import { MdInbox, MdOutlineAddBox } from "react-icons/md";
-import { VISIBLE_CUSTOM } from "~/lib/animation";
 import { GoPencil } from "react-icons/go";
 import { CgAssign } from "react-icons/cg";
 import { RiUserAddLine } from "react-icons/ri";
@@ -14,11 +10,19 @@ import { BiLockAlt } from "react-icons/bi";
 import { TbLayoutSidebarRightCollapse, TbTrash } from "react-icons/tb";
 import { IoTrashBin } from "react-icons/io5";
 import { useNavigate } from "@remix-run/react";
+import { FaUserCircle } from "react-icons/fa";
+import { arrayToCsv, convertDateSqlFormat, downloadBlob } from "~/lib/utils";
 
 export default function Lists(props) {
-  const { dataListSelected, handleSelectedList } = useContext(
-    Global.RootContext
-  );
+  const {
+    dataListSelected,
+    handleSelectedList,
+    dataTask,
+    taskStatusDropdown,
+    taskPriorityDropdown,
+    taskProjectDropdown,
+    dataAssignees,
+  } = useContext(Global.RootContext);
 
   const { data, setSidebarOpen } = props;
   const { params } = data || {};
@@ -65,148 +69,6 @@ export default function Lists(props) {
     ),
   };
 
-  const getAssignees = [
-    {
-      name: "Devan",
-      image: "/images/user-img-sample.jpg",
-    },
-    {
-      name: "Firmansyah",
-      image: "",
-    },
-  ];
-
-  const projectListExamples = [
-    {
-      id: 1,
-      name: "Login page",
-      status: "In progress",
-      assignees: [
-        {
-          name: "Devan",
-          image: "/images/user-img-sample.jpg",
-        },
-      ],
-      dueDate: "24 May 2023",
-      priority: "High",
-      project: "PHASE 1",
-      projectHexColor: "#08c408",
-    },
-    {
-      id: 2,
-      name: "Dashboard page",
-      status: "In progress",
-      assignees: [
-        {
-          name: "Devan",
-          image: "/images/user-img-sample.jpg",
-        },
-      ],
-      dueDate: "24 May 2023",
-      priority: "High",
-      project: "PHASE 1",
-      projectHexColor: "#08c408",
-    },
-    {
-      id: 3,
-      name: "Manage products (list, edit, add)",
-      status: "In progress",
-      assignees: [
-        {
-          name: "Devan",
-          image: "/images/user-img-sample.jpg",
-        },
-      ],
-      dueDate: "24 May 2023",
-      priority: "High",
-      project: "PHASE 1",
-      projectHexColor: "#08c408",
-    },
-    {
-      id: 4,
-      name: "Manage collections (list, edit, add)",
-      status: "In progress",
-      assignees: [
-        {
-          name: "Devan",
-          image: "/images/user-img-sample.jpg",
-        },
-      ],
-      dueDate: "24 May 2023",
-      priority: "High",
-      project: "PHASE 1",
-      projectHexColor: "#08c408",
-    },
-    {
-      id: 5,
-      name: "Manage discounts (list, edit, add)",
-      status: "In progress",
-      assignees: [
-        {
-          name: "Devan",
-          image: "/images/user-img-sample.jpg",
-        },
-      ],
-      dueDate: "24 May 2023",
-      priority: "High",
-      project: "PHASE 1",
-      projectHexColor: "#08c408",
-    },
-  ];
-
-  const projectListExamples2 = [
-    {
-      id: 1,
-      name: "API for Login (POST)",
-      status: "In progress",
-      assignees: "Devan",
-      dueDate: "27 May 2023",
-      priority: "High",
-      project: "PHASE 2",
-      projectHexColor: "#725cff",
-    },
-    {
-      id: 1,
-      name: "API for Dashboard (GET)",
-      status: "In progress",
-      assignees: "Devan",
-      dueDate: "27 May 2023",
-      priority: "High",
-      project: "PHASE 2",
-      projectHexColor: "#725cff",
-    },
-    {
-      id: 1,
-      name: "API for Manage Products (GET, POST, PUT, DELETE)",
-      status: "In progress",
-      assignees: "Devan",
-      dueDate: "27 May 2023",
-      priority: "High",
-      project: "PHASE 2",
-      projectHexColor: "#725cff",
-    },
-    {
-      id: 1,
-      name: "API for Manage Collections (GET, POST, PUT, DELETE)",
-      status: "In progress",
-      assignees: "Devan",
-      dueDate: "27 May 2023",
-      priority: "High",
-      project: "PHASE 2",
-      projectHexColor: "#725cff",
-    },
-    {
-      id: 1,
-      name: "API for Manage Discounts (GET, POST, PUT, DELETE)",
-      status: "In progress",
-      assignees: "Devan",
-      dueDate: "27 May 2023",
-      priority: "High",
-      project: "PHASE 2",
-      projectHexColor: "#725cff",
-    },
-  ];
-
   let isAuthPage = slug && String(slug).includes("auth");
   let isDefaultPage =
     slug &&
@@ -216,11 +78,54 @@ export default function Lists(props) {
   let titlePage = isDefaultPage
     ? titleDefaultPages[slug]
     : dataListSelected?.name;
+
+  let rowCsvTasks = [
+    [
+      "Task",
+      "Status",
+      "Assignees",
+      "Due Date",
+      "Priority",
+      "Project",
+      "Created At",
+    ],
+  ];
+  dataTask.map((data) => {
+    const { tasks } = data;
+
+    return tasks.map((task) => {
+      const {
+        name,
+        task_status,
+        assignees,
+        due_date,
+        task_priority,
+        task_project,
+        created_at,
+      } = task;
+
+      return rowCsvTasks.push([
+        name,
+        task_status.name,
+        assignees.map(({ first_name }) => first_name).join(", "),
+        convertDateSqlFormat(due_date),
+        task_priority?.name || "",
+        task_project?.name || "",
+        convertDateSqlFormat(created_at),
+      ]);
+    });
+  });
+
   let itemDropdownNav = [
     {
-      url: "#",
+      isDisabledLink: true,
       content: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M246.6 9.4c-12.5-12.5-32.8-12.5-45.3 0l-128 128c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 109.3V320c0 17.7 14.3 32 32 32s32-14.3 32-32V109.3l73.4 73.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-128-128zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64c0 53 43 96 96 96H352c53 0 96-43 96-96V352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V352z"/></svg> Export CSV`,
-      onClick: {},
+      onClick: () =>
+        downloadBlob(
+          arrayToCsv(rowCsvTasks),
+          "export-tasks.csv",
+          "text/csv;charset=utf-8;"
+        ),
     },
   ];
 
@@ -296,17 +201,6 @@ export default function Lists(props) {
               </div>
             ) : (
               <>
-                {!isDefaultPage && (
-                  <div>
-                    <Global.Button
-                      type="button"
-                      color="outlined-secondary"
-                      size="sm"
-                    >
-                      Share
-                    </Global.Button>
-                  </div>
-                )}
                 <div>
                   <Global.Button type="button" color="transparent" size="sm">
                     Filters
@@ -359,563 +253,209 @@ export default function Lists(props) {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[rgba(255,255,255,.1)] align-top text-[rgba(255,255,255,.9)]">
-                        <tr className="border-none">
-                          <td colSpan={6} className="py-2 pr-3">
-                            <span style={{ color: "#08c408" }}>PHASE 1</span>
-                          </td>
-                        </tr>
-                        {projectListExamples.map((item, index) => {
-                          const {
-                            id,
-                            name,
-                            status,
-                            assignees,
-                            dueDate,
-                            priority,
-                            project,
-                            projectHexColor,
-                          } = item;
+                        {dataTask.map((data, index) => {
+                          const { project, tasks } = data;
 
-                          return (
-                            <tr key={index}>
-                              <td
-                                className="relative min-h-[24px] w-[340px] cursor-pointer rounded-lg pb-2 pr-3 pt-2.5 text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141] hover:px-3"
-                                onClick={() => window.slideOverDetail()}
-                              >
-                                <p className="w-[300px] truncate">{name}</p>
-                              </td>
-                              <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
-                                <Global.Dropdown
-                                  items={[
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <Global.Badge
-                                          text="To do"
-                                          hexColor="#242424"
-                                          borderColor="#3c3c3c"
-                                          textColor="white"
-                                          backgroundOpacity="1"
-                                        />
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <Global.Badge
-                                          text="Hold"
-                                          hexColor="#ff2eb9"
-                                        />
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <Global.Badge
-                                          text="In Progress"
-                                          hexColor="#f6b065"
-                                        />
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <Global.Badge
-                                          text="Internal Review"
-                                          hexColor="#1f96ff"
-                                        />
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <Global.Badge
-                                          text="Client Review"
-                                          hexColor="#725cff"
-                                        />
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <Global.Badge
-                                          text="Done"
-                                          hexColor="#00b8a8"
-                                        />
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: "Configure Statuses...",
-                                      isInnerHTML: true,
-                                      isBottomLink: true,
-                                    },
-                                  ]}
-                                  fullWidth={true}
-                                  forceOverlap={true}
-                                  className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
-                                >
-                                  <Global.Badge
-                                    text={status}
-                                    hexColor="#f6b065"
-                                  />
-                                </Global.Dropdown>
-                              </td>
-                              <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
-                                <Global.Dropdown
-                                  items={getAssignees.map(
-                                    (getAssign, index) => {
-                                      const { name, image } = getAssign;
+                          return tasks?.length ? (
+                            <Fragment key={index}>
+                              <tr className="border-none">
+                                <td colSpan={6} className="py-2 pr-3">
+                                  <span style={{ color: project.hex_color }}>
+                                    {project.name}
+                                  </span>
+                                </td>
+                              </tr>
+                              {tasks?.length
+                                ? tasks.map((task, index) => {
+                                    const {
+                                      id,
+                                      name,
+                                      task_status,
+                                      assignees,
+                                      due_date,
+                                      task_priority,
+                                      task_project,
+                                    } = task;
 
-                                      return {
-                                        url: "#",
-                                        content: (
-                                          <div className="flex items-center">
-                                            {image?.length ? (
-                                              <div className="h-[22px] w-[22px] flex-shrink-0">
-                                                <img
-                                                  className="h-[22px] w-[22px] rounded-full"
-                                                  src={image}
-                                                  alt=""
-                                                />
+                                    return (
+                                      <Fragment key={index}>
+                                        <tr>
+                                          <td
+                                            className="relative min-h-[24px] w-[340px] cursor-pointer rounded-lg pb-2 pr-3 pt-2.5 text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141] hover:px-3"
+                                            onClick={() =>
+                                              window.slideOverDetail(id)
+                                            }
+                                          >
+                                            <p className="w-[300px] truncate">
+                                              {name}
+                                            </p>
+                                          </td>
+                                          <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
+                                            <Global.Dropdown
+                                              items={taskStatusDropdown}
+                                              fullWidth={true}
+                                              forceOverlap={true}
+                                              className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
+                                            >
+                                              <Global.Badge
+                                                text={task_status.name}
+                                                hexColor={task_status.hex_color}
+                                              />
+                                            </Global.Dropdown>
+                                          </td>
+                                          <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
+                                            <Global.Dropdown
+                                              items={dataAssignees.map(
+                                                (getAssign, index) => {
+                                                  const {
+                                                    first_name,
+                                                    profile_image,
+                                                  } = getAssign || {};
+
+                                                  return {
+                                                    url: "#",
+                                                    onClick: () => {},
+                                                    content: (
+                                                      <div
+                                                        className="flex items-center"
+                                                        key={index}
+                                                      >
+                                                        {profile_image?.length ? (
+                                                          <div className="h-[22px] w-[22px] flex-shrink-0">
+                                                            <img
+                                                              className="h-[22px] w-[22px] rounded-full"
+                                                              src={
+                                                                profile_image
+                                                              }
+                                                              alt=""
+                                                            />
+                                                          </div>
+                                                        ) : (
+                                                          <FaUserCircle className="h-[22px] w-[22px] rounded-full" />
+                                                        )}
+                                                        <div className="ml-2">
+                                                          {first_name}
+                                                        </div>
+                                                      </div>
+                                                    ),
+                                                    isInnerHTML: false,
+                                                  };
+                                                }
+                                              )}
+                                              fullWidth={true}
+                                              forceOverlap={true}
+                                              className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
+                                              menuButtonClassName="min-h-[24px]"
+                                            >
+                                              <div className="flex h-[22px] w-[22px]">
+                                                {assignees.map(
+                                                  (assign, index) => (
+                                                    <>
+                                                      {assign?.profile_image
+                                                        ?.length ? (
+                                                        <img
+                                                          key={index}
+                                                          className="h-[22px] w-[22px] rounded-full"
+                                                          src={
+                                                            assign.profile_image
+                                                          }
+                                                          alt=""
+                                                        />
+                                                      ) : (
+                                                        <FaUserCircle className="h-[22px] w-[22px] rounded-full" />
+                                                      )}
+                                                    </>
+                                                  )
+                                                )}
                                               </div>
-                                            ) : null}
-                                            <div className="ml-2">{name}</div>
-                                          </div>
-                                        ),
-                                        isInnerHTML: false,
-                                      };
-                                    }
-                                  )}
-                                  fullWidth={true}
-                                  forceOverlap={true}
-                                  className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
-                                  menuButtonClassName="min-h-[24px]"
-                                >
-                                  <div className="flex h-[22px] w-[22px]">
-                                    {assignees.map((assign, index) => (
-                                      <img
-                                        key={index}
-                                        className="h-[22px] w-[22px] rounded-full"
-                                        src={assign.image}
-                                        alt=""
-                                      />
-                                    ))}
-                                  </div>
-                                </Global.Dropdown>
-                              </td>
-                              <td className="relative cursor-pointer whitespace-nowrap rounded-lg text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141]">
-                                <Global.Datepicker inputClassName="!px-3 !py-2" />
-                              </td>
-                              <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
-                                <Global.Dropdown
-                                  items={[
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span className="text-[rgba(255,255,255,.9)]">
-                                          None
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span style={{ color: "#fd6b5d" }}>
-                                          High
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span style={{ color: "#f2b054" }}>
-                                          Medium
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span style={{ color: "#56c70f" }}>
-                                          Low
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: "Configure Priorities...",
-                                      isInnerHTML: true,
-                                      isBottomLink: true,
-                                    },
-                                  ]}
-                                  fullWidth={true}
-                                  forceOverlap={true}
-                                  className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
-                                  menuButtonClassName="min-h-[24px]"
-                                >
-                                  <span style={{ color: "#fd6b5d" }}>
-                                    {priority}
-                                  </span>
-                                </Global.Dropdown>
-                              </td>
-                              <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
-                                <Global.Dropdown
-                                  items={[
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span className="text-[rgba(255,255,255,.9)]">
-                                          None
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span style={{ color: "#08c408" }}>
-                                          PHASE 1
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span style={{ color: "#725cff" }}>
-                                          PHASE 2
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span style={{ color: "#1f96ff" }}>
-                                          PHASE 3
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span style={{ color: "#ff2eb9" }}>
-                                          PHASE 4
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: "Configure Projects...",
-                                      isInnerHTML: true,
-                                      isBottomLink: true,
-                                    },
-                                  ]}
-                                  fullWidth={true}
-                                  forceOverlap={true}
-                                  className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
-                                  menuButtonClassName="min-h-[24px]"
-                                >
-                                  <span style={{ color: `${projectHexColor}` }}>
-                                    {project}
-                                  </span>
-                                </Global.Dropdown>
-                              </td>
-                            </tr>
-                          );
+                                            </Global.Dropdown>
+                                          </td>
+                                          <td className="relative cursor-pointer whitespace-nowrap rounded-lg text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141]">
+                                            <Global.Datepicker
+                                              inputClassName="!px-3 !py-2"
+                                              defaultValue={due_date}
+                                            />
+                                          </td>
+                                          <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
+                                            <Global.Dropdown
+                                              items={taskPriorityDropdown}
+                                              fullWidth={true}
+                                              forceOverlap={true}
+                                              className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
+                                              menuButtonClassName="min-h-[24px]"
+                                            >
+                                              {task_priority ? (
+                                                <span
+                                                  style={{
+                                                    color:
+                                                      task_priority.hex_color,
+                                                  }}
+                                                >
+                                                  {task_priority.name}
+                                                </span>
+                                              ) : (
+                                                <span className="text-[rgba(255,255,255,.9)]">
+                                                  None
+                                                </span>
+                                              )}
+                                            </Global.Dropdown>
+                                          </td>
+                                          <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
+                                            <Global.Dropdown
+                                              items={taskProjectDropdown}
+                                              fullWidth={true}
+                                              forceOverlap={true}
+                                              className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
+                                              menuButtonClassName="min-h-[24px]"
+                                            >
+                                              {task_project ? (
+                                                <span
+                                                  style={{
+                                                    color:
+                                                      task_project.hex_color,
+                                                  }}
+                                                >
+                                                  {task_project.name}
+                                                </span>
+                                              ) : (
+                                                <span className="text-[rgba(255,255,255,.9)]">
+                                                  None
+                                                </span>
+                                              )}
+                                            </Global.Dropdown>
+                                          </td>
+                                        </tr>
+                                        {index + 1 === tasks.length ? (
+                                          <tr className="h-20">
+                                            <td
+                                              colSpan={6}
+                                              className="py-2 pr-3"
+                                            >
+                                              <Global.Button
+                                                type="button"
+                                                color="outlined-secondary"
+                                                size="sm"
+                                                onClick={() =>
+                                                  window.addTaskModal({
+                                                    ...(task_project?.id && {
+                                                      taskProject: task_project,
+                                                    }),
+                                                  })
+                                                }
+                                              >
+                                                <MdOutlineAddBox size={18} />{" "}
+                                                New Task
+                                              </Global.Button>
+                                            </td>
+                                          </tr>
+                                        ) : null}
+                                      </Fragment>
+                                    );
+                                  })
+                                : null}
+                            </Fragment>
+                          ) : null;
                         })}
-                        <tr className="h-20">
-                          <td colSpan={6} className="py-2 pr-3">
-                            <Global.Button
-                              type="button"
-                              color="outlined-secondary"
-                              size="sm"
-                              onClick={() => window.addTaskModal()}
-                            >
-                              <MdOutlineAddBox size={18} /> New Task
-                            </Global.Button>
-                          </td>
-                        </tr>
-                        <tr className="border-none">
-                          <td colSpan={6} className="py-2 pr-3">
-                            <span style={{ color: "#725cff" }}>PHASE 2</span>
-                          </td>
-                        </tr>
-                        {projectListExamples2.map((item, index) => {
-                          const {
-                            id,
-                            name,
-                            status,
-                            assignees,
-                            dueDate,
-                            priority,
-                            project,
-                            projectHexColor,
-                          } = item;
-
-                          return (
-                            <tr key={index}>
-                              <td
-                                className="relative min-h-[24px] w-[340px] cursor-pointer rounded-lg pb-2 pr-3 pt-2.5 text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141] hover:px-3"
-                                onClick={() => window.slideOverDetail()}
-                              >
-                                <p className="w-[300px] truncate">{name}</p>
-                              </td>
-                              <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
-                                <Global.Dropdown
-                                  items={[
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <Global.Badge
-                                          text="To do"
-                                          hexColor="#242424"
-                                          borderColor="#3c3c3c"
-                                          textColor="white"
-                                          backgroundOpacity="1"
-                                        />
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <Global.Badge
-                                          text="Hold"
-                                          hexColor="#ff2eb9"
-                                        />
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <Global.Badge
-                                          text="In Progress"
-                                          hexColor="#f6b065"
-                                        />
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <Global.Badge
-                                          text="Internal Review"
-                                          hexColor="#1f96ff"
-                                        />
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <Global.Badge
-                                          text="Client Review"
-                                          hexColor="#725cff"
-                                        />
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <Global.Badge
-                                          text="Done"
-                                          hexColor="#00b8a8"
-                                        />
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: "Configure Statuses...",
-                                      isInnerHTML: true,
-                                      isBottomLink: true,
-                                    },
-                                  ]}
-                                  fullWidth={true}
-                                  forceOverlap={true}
-                                  className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
-                                >
-                                  <Global.Badge
-                                    text={status}
-                                    hexColor="#f6b065"
-                                  />
-                                </Global.Dropdown>
-                              </td>
-                              <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
-                                <Global.Dropdown
-                                  items={[
-                                    {
-                                      url: "#",
-                                      content: "Devan",
-                                    },
-                                    {
-                                      url: "#",
-                                      content: "Firmansyah",
-                                    },
-                                  ]}
-                                  fullWidth={true}
-                                  forceOverlap={true}
-                                  className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
-                                  menuButtonClassName="min-h-[24px]"
-                                >
-                                  {assignees}
-                                </Global.Dropdown>
-                              </td>
-                              <td className="relative cursor-pointer whitespace-nowrap rounded-lg px-3 py-2 text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141]">
-                                {dueDate}
-                              </td>
-                              <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
-                                <Global.Dropdown
-                                  items={[
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span className="text-[rgba(255,255,255,.9)]">
-                                          None
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span style={{ color: "#fd6b5d" }}>
-                                          High
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span style={{ color: "#f2b054" }}>
-                                          Medium
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span style={{ color: "#56c70f" }}>
-                                          Low
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: "Configure Priorities...",
-                                      isInnerHTML: true,
-                                      isBottomLink: true,
-                                    },
-                                  ]}
-                                  fullWidth={true}
-                                  forceOverlap={true}
-                                  className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
-                                  menuButtonClassName="min-h-[24px]"
-                                >
-                                  <span style={{ color: "#fd6b5d" }}>
-                                    {priority}
-                                  </span>
-                                </Global.Dropdown>
-                              </td>
-                              <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
-                                <Global.Dropdown
-                                  items={[
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span className="text-[rgba(255,255,255,.9)]">
-                                          None
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span style={{ color: "#08c408" }}>
-                                          PHASE 1
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span style={{ color: "#725cff" }}>
-                                          PHASE 2
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span style={{ color: "#1f96ff" }}>
-                                          PHASE 3
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: (
-                                        <span style={{ color: "#ff2eb9" }}>
-                                          PHASE 4
-                                        </span>
-                                      ),
-                                      isInnerHTML: false,
-                                    },
-                                    {
-                                      url: "#",
-                                      content: "Configure Projects...",
-                                      isInnerHTML: true,
-                                      isBottomLink: true,
-                                    },
-                                  ]}
-                                  fullWidth={true}
-                                  forceOverlap={true}
-                                  className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
-                                  menuButtonClassName="min-h-[24px]"
-                                >
-                                  <span style={{ color: `${projectHexColor}` }}>
-                                    {project}
-                                  </span>
-                                </Global.Dropdown>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                        <tr className="h-20">
-                          <td colSpan={6} className="py-2 pr-3">
-                            <Global.Button
-                              type="button"
-                              color="outlined-secondary"
-                              size="sm"
-                              onClick={() => window.addTaskModal()}
-                            >
-                              <MdOutlineAddBox size={18} /> New Task
-                            </Global.Button>
-                          </td>
-                        </tr>
                       </tbody>
                     </table>
                   </div>
