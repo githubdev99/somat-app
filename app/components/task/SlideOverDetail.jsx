@@ -5,8 +5,8 @@ import { Dialog, Transition } from "@headlessui/react";
 import { BsThreeDots, BsChat } from "react-icons/bs";
 import { FaRegBellSlash, FaUserCircle } from "react-icons/fa";
 import { IoNewspaperOutline, IoSend } from "react-icons/io5";
-import { getOneTask } from "~/lib/api";
-import { convertDate } from "~/lib/utils";
+import { getOneTask, getOneTaskHistory, updateTask } from "~/lib/api";
+import { convertDate, convertDateWithTime } from "~/lib/utils";
 
 export default function SlideOverDetail() {
   const {
@@ -17,25 +17,80 @@ export default function SlideOverDetail() {
     handleDataTaskPriority,
     handleDataTaskProject,
     taskProjectDropdown,
+    taskPriorityDropdown,
+    handleRefreshDataTask,
   } = useContext(Global.RootContext);
 
   const [open, setOpen] = useState(false);
   const [detailDataTask, setDetailDataTask] = useState(null);
-  const [assigneesSelected, setAssigneesSelected] = useState({});
+  const [detailDataTaskHistory, setDetailDataTaskHistory] = useState([]);
+  const [assigneesSelected, setAssigneesSelected] = useState([]);
   const [listDropdown, setListDropdown] = useState([]);
+
+  const handleDetailDataTaskHistory = async (id) => {
+    const response = await getOneTaskHistory(id, localStorage.getItem("token"));
+
+    if (!response?.data) return;
+
+    setDetailDataTaskHistory(response?.data);
+  };
 
   const handleDetailDataTask = async (id) => {
     const response = await getOneTask(id, localStorage.getItem("token"));
 
-    if (!response?.data) return;
+    if (!response?.data) {
+      window.showToastNotification({
+        type: "failed",
+        title: "Info!",
+        message: "Task has permanently deleted",
+      });
+      return;
+    }
+
+    await handleDetailDataTaskHistory(id);
 
     setDetailDataTask(response?.data);
     setOpen(true);
   };
 
+  const handleDeleteTask = (id) => {
+    const fetchDeleteTask = async () => {
+      const response = await updateTask(
+        {
+          id,
+          is_deleted: true,
+        },
+        localStorage.getItem("token")
+      );
+
+      const { code, message } = response?.status || {};
+
+      if (code === 200) window.slideOverDetailClose();
+
+      window.showToastNotification({
+        type: code === 200 ? "success" : "failed",
+        title: code === 200 ? "Success!" : "Failed!",
+        message: message,
+      });
+
+      await handleRefreshDataTask(localStorage.getItem("selectedWorkspaceId"));
+    };
+
+    window.showAlertConfirmation({
+      title: `Confirm Move to Trash`,
+      message: `Are you sure move this task to trash ?`,
+      onSubmit: fetchDeleteTask,
+      color: "danger",
+    });
+  };
+
   useEffect(() => {
     window.slideOverDetail = (id) => {
       handleDetailDataTask(id);
+    };
+
+    window.slideOverDetailClose = () => {
+      setOpen(false);
     };
   }, []);
 
@@ -117,7 +172,9 @@ export default function SlideOverDetail() {
                                     content: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M246.6 9.4c-12.5-12.5-32.8-12.5-45.3 0l-128 128c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 109.3V320c0 17.7 14.3 32 32 32s32-14.3 32-32V109.3l73.4 73.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-128-128zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64c0 53 43 96 96 96H352c53 0 96-43 96-96V352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V352z"/></svg> Export activity history as CSV`,
                                   },
                                   {
-                                    url: "#",
+                                    isDisabledLink: true,
+                                    onClick: () =>
+                                      handleDeleteTask(detailDataTask.id),
                                     content: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg> Move to Trash`,
                                   },
                                 ]}
@@ -202,9 +259,12 @@ export default function SlideOverDetail() {
                                         assignees;
 
                                       return {
-                                        url: "#",
+                                        isDisabledLink: true,
                                         onClick: () =>
-                                          setAssigneesSelected(assignees),
+                                          setAssigneesSelected([
+                                            ...detailDataTask.assignees,
+                                            assignees,
+                                          ]),
                                         content: (
                                           <div className="flex items-center">
                                             <div className="h-[22px] w-[22px] flex-shrink-0">
@@ -283,7 +343,8 @@ export default function SlideOverDetail() {
                                     menuItemsClassName="left-0"
                                     menuButtonClassName="min-h-[25px]"
                                   >
-                                    {Object.keys(detailDataTask.list).length ? (
+                                    {detailDataTask.list &&
+                                    Object.keys(detailDataTask.list).length ? (
                                       <span
                                         className="px-1"
                                         style={{
@@ -300,62 +361,31 @@ export default function SlideOverDetail() {
                                 </td>
                                 <td>
                                   <Global.Dropdown
-                                    items={[
-                                      {
-                                        url: "#",
-                                        content: (
-                                          <span className="text-[rgba(255,255,255,.9)]">
-                                            None
-                                          </span>
-                                        ),
-                                        isInnerHTML: false,
-                                      },
-                                      {
-                                        url: "#",
-                                        content: (
-                                          <span style={{ color: "#fd6b5d" }}>
-                                            High
-                                          </span>
-                                        ),
-                                        isInnerHTML: false,
-                                      },
-                                      {
-                                        url: "#",
-                                        content: (
-                                          <span style={{ color: "#f2b054" }}>
-                                            Medium
-                                          </span>
-                                        ),
-                                        isInnerHTML: false,
-                                      },
-                                      {
-                                        url: "#",
-                                        content: (
-                                          <span style={{ color: "#56c70f" }}>
-                                            Low
-                                          </span>
-                                        ),
-                                        isInnerHTML: false,
-                                      },
-                                      {
-                                        url: "#",
-                                        content: "Configure Priorities...",
-                                        isInnerHTML: true,
-                                        isBottomLink: true,
-                                      },
-                                    ]}
+                                    items={taskPriorityDropdown}
                                     fullWidth={true}
                                     forceOverlap={true}
                                     className="w-full rounded-lg px-3 py-0.5 transition duration-100 ease-in hover:bg-[#414141]"
                                     menuItemsClassName="left-0"
                                     menuButtonClassName="min-h-[25px]"
                                   >
-                                    <span
-                                      className="px-1"
-                                      style={{ color: "#fd6b5d" }}
-                                    >
-                                      High
-                                    </span>
+                                    {detailDataTask.task_priority &&
+                                    Object.keys(detailDataTask.task_priority)
+                                      .length ? (
+                                      <span
+                                        className="px-1"
+                                        style={{
+                                          color:
+                                            detailDataTask.task_priority
+                                              .hex_color,
+                                        }}
+                                      >
+                                        {detailDataTask.task_priority.name}
+                                      </span>
+                                    ) : (
+                                      <span className="px-1 text-[rgba(255,255,255,.9)]">
+                                        None
+                                      </span>
+                                    )}
                                   </Global.Dropdown>
                                 </td>
                               </tr>
@@ -412,6 +442,7 @@ export default function SlideOverDetail() {
                         <CardDetailComponent
                           className="h-full"
                           detailDataTask={detailDataTask}
+                          detailDataTaskHistory={detailDataTaskHistory}
                         >
                           <TabComponent />
                         </CardDetailComponent>
@@ -428,12 +459,12 @@ export default function SlideOverDetail() {
   );
 }
 
-const CardDetailComponent = ({ children, className = "", detailDataTask }) => {
+const CardDetailComponent = ({ children, className = "", ...otherProps }) => {
   return (
     <div className={`rounded-[10px] bg-[#242424] py-2 ${className}`}>
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
-          return React.cloneElement(child, { detailDataTask });
+          return React.cloneElement(child, { ...otherProps });
         }
 
         return child;
@@ -442,8 +473,10 @@ const CardDetailComponent = ({ children, className = "", detailDataTask }) => {
   );
 };
 
-const TabComponent = ({ detailDataTask }) => {
-  const [selectedComponent, setSelectedComponent] = useState(<ChatComponent />);
+const TabComponent = ({ detailDataTask, detailDataTaskHistory }) => {
+  const [selectedComponent, setSelectedComponent] = useState(
+    <ChatComponent data={detailDataTaskHistory} />
+  );
   const [selectedId, setSelectedId] = useState("chat");
 
   const tabs = [
@@ -452,7 +485,7 @@ const TabComponent = ({ detailDataTask }) => {
       name: "Chat",
       href: "#",
       icon: BsChat,
-      component: ChatComponent,
+      component: <ChatComponent data={detailDataTaskHistory} />,
     },
     {
       id: "description",
@@ -515,7 +548,7 @@ const TabComponent = ({ detailDataTask }) => {
   );
 };
 
-const ChatComponent = () => {
+const ChatComponent = ({ data }) => {
   const ChatBlock = ({
     children,
     userImage,
@@ -558,17 +591,30 @@ const ChatComponent = () => {
   return (
     <>
       <div className="h-[425px] overflow-auto px-5 py-2 text-[12px]">
-        <p className="text-center">Today 15.03</p>
-        <ChatBlock>Mark opened this task</ChatBlock>
-        <ChatBlock>
-          Mark updated the name <br />
-          Login Page Mark updated the name <br />
-        </ChatBlock>
-        <ChatBlock>
-          Mark update project to{" "}
-          <span style={{ color: "#08c408" }}>PHASE 1</span>
-        </ChatBlock>
-        <ChatBlock>Mark assign Devan</ChatBlock>
+        {data?.map((item, index) => {
+          const { message, created_at } = item;
+
+          let createdAt = new Date(created_at);
+          let createdAtNext = data[index + 1]?.created_at
+            ? new Date(data[index + 1].created_at)
+            : null;
+
+          return (
+            <>
+              {!index &&
+              createdAtNext &&
+              createdAt.getDate() == createdAtNext.getDate() ? (
+                <p className="mb-2 text-center">
+                  {convertDateWithTime(new Date(created_at))}
+                </p>
+              ) : null}
+              <ChatBlock key={index}>
+                <div dangerouslySetInnerHTML={{ __html: message }}></div>
+              </ChatBlock>
+            </>
+          );
+        })}
+
         <ChatHistory userImageText="D" isReadUser={true}>
           <div>
             <p>

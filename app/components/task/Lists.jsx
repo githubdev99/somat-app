@@ -6,12 +6,11 @@ import { MdInbox, MdOutlineAddBox } from "react-icons/md";
 import { GoPencil } from "react-icons/go";
 import { CgAssign } from "react-icons/cg";
 import { RiUserAddLine } from "react-icons/ri";
-import { BiLockAlt } from "react-icons/bi";
 import { TbLayoutSidebarRightCollapse, TbTrash } from "react-icons/tb";
 import { IoTrashBin } from "react-icons/io5";
-import { useNavigate } from "@remix-run/react";
 import { FaUserCircle } from "react-icons/fa";
 import { arrayToCsv, convertDateSqlFormat, downloadBlob } from "~/lib/utils";
+import { emptyTask } from "~/lib/api";
 
 export default function Lists(props) {
   const {
@@ -22,13 +21,13 @@ export default function Lists(props) {
     taskPriorityDropdown,
     taskProjectDropdown,
     dataAssignees,
+    clickedNavId,
+    handleRefreshDataTask,
   } = useContext(Global.RootContext);
 
   const { data, setSidebarOpen } = props;
   const { params } = data || {};
   const { slug } = params || {};
-
-  const navigate = useNavigate();
 
   const titleDefaultPages = {
     inbox: (
@@ -55,12 +54,6 @@ export default function Lists(props) {
         Created by me
       </>
     ),
-    private: (
-      <>
-        <BiLockAlt size={18} />
-        Private tasks
-      </>
-    ),
     trash: (
       <>
         <TbTrash size={18} />
@@ -71,10 +64,7 @@ export default function Lists(props) {
 
   let isAuthPage = slug && String(slug).includes("auth");
   let isDefaultPage =
-    slug &&
-    ["inbox", "draft", "assigned", "created", "private", "trash"].includes(
-      slug
-    );
+    slug && ["inbox", "draft", "assigned", "created", "trash"].includes(slug);
   let titlePage = isDefaultPage
     ? titleDefaultPages[slug]
     : dataListSelected?.name;
@@ -116,6 +106,32 @@ export default function Lists(props) {
     });
   });
 
+  const handleEmptyTask = () => {
+    const fetchEmptyTask = async () => {
+      const response = await emptyTask(
+        localStorage.getItem("selectedWorkspaceId"),
+        localStorage.getItem("token")
+      );
+
+      const { code, message } = response?.status || {};
+
+      window.showToastNotification({
+        type: code === 200 ? "success" : "failed",
+        title: code === 200 ? "Success!" : "Failed!",
+        message: message,
+      });
+
+      await handleRefreshDataTask(localStorage.getItem("selectedWorkspaceId"));
+    };
+
+    window.showAlertConfirmation({
+      title: `Confirm Empty Trash`,
+      message: `Are you sure empty this trash ?`,
+      onSubmit: fetchEmptyTask,
+      color: "danger",
+    });
+  };
+
   let itemDropdownNav = [
     {
       isDisabledLink: true,
@@ -131,12 +147,12 @@ export default function Lists(props) {
 
   if (!isDefaultPage)
     itemDropdownNav.push({
-      url: "#",
+      isDisabledLink: true,
       content: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg> Move List to Trash`,
       onClick: () =>
         window.showAlertConfirmation({
           color: "danger",
-          title: "Empty trash",
+          title: "Empty list",
           message: "Are you sure to empty this list?",
         }),
     });
@@ -144,10 +160,6 @@ export default function Lists(props) {
   useEffect(() => {
     if (!isDefaultPage) handleSelectedList(slug);
   }, []);
-
-  useEffect(() => {
-    if (!dataListSelected) navigate("/app/assigned");
-  }, [dataListSelected]);
 
   return (
     <>
@@ -185,19 +197,16 @@ export default function Lists(props) {
           <div className="flex flex-row items-center gap-2">
             {slug === "trash" ? (
               <div>
-                <Global.Button
-                  type="button"
-                  color="danger"
-                  size="sm"
-                  onClick={() =>
-                    window.showAlertConfirmation({
-                      title: "Empty trash",
-                      message: "Are you sure to empty this list?",
-                    })
-                  }
-                >
-                  <IoTrashBin /> Empty Trash
-                </Global.Button>
+                {dataTask?.length ? (
+                  <Global.Button
+                    type="button"
+                    color="danger"
+                    size="sm"
+                    onClick={handleEmptyTask}
+                  >
+                    <IoTrashBin /> Empty Trash
+                  </Global.Button>
+                ) : null}
               </div>
             ) : (
               <>
@@ -225,240 +234,261 @@ export default function Lists(props) {
             <div className="px-4 sm:px-6 lg:px-8">
               <div className="flow-root">
                 <div className="-mx-4 -my-2 sm:-mx-6 lg:-mx-8">
-                  <div className="inline-block min-w-full align-top sm:px-6 lg:px-8">
-                    <table className="min-w-full divide-y divide-[rgba(255,255,255,.1)] text-left align-top">
-                      <thead className="whitespace-nowrap text-[rgba(255,255,255,.4)]">
-                        <tr>
-                          <th
-                            scope="col"
-                            className="py-2 pr-3 font-normal text-[rgba(255,255,255,.9)]"
-                          >
-                            Tasks
-                          </th>
-                          <th scope="col" className="px-3 py-2 font-normal">
-                            Status
-                          </th>
-                          <th scope="col" className="px-3 py-2 font-normal">
-                            Assignees
-                          </th>
-                          <th scope="col" className="px-3 py-2 font-normal">
-                            Due Date
-                          </th>
-                          <th scope="col" className="px-3 py-2 font-normal">
-                            Priority
-                          </th>
-                          <th scope="col" className="px-3 py-2 font-normal">
-                            Project
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[rgba(255,255,255,.1)] align-top text-[rgba(255,255,255,.9)]">
-                        {dataTask.map((data, index) => {
-                          const { project, tasks } = data;
+                  {rowCsvTasks?.length > 1 ? (
+                    <div className="inline-block min-w-full align-top sm:px-6 lg:px-8">
+                      <table className="min-w-full divide-y divide-[rgba(255,255,255,.1)] text-left align-top">
+                        <thead className="whitespace-nowrap text-[rgba(255,255,255,.4)]">
+                          <tr>
+                            <th
+                              scope="col"
+                              className="py-2 pr-3 font-normal text-[rgba(255,255,255,.9)]"
+                            >
+                              Tasks
+                            </th>
+                            <th scope="col" className="px-3 py-2 font-normal">
+                              Status
+                            </th>
+                            <th scope="col" className="px-3 py-2 font-normal">
+                              Assignees
+                            </th>
+                            <th scope="col" className="px-3 py-2 font-normal">
+                              Due Date
+                            </th>
+                            <th scope="col" className="px-3 py-2 font-normal">
+                              Priority
+                            </th>
+                            <th scope="col" className="px-3 py-2 font-normal">
+                              Project
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[rgba(255,255,255,.1)] align-top text-[rgba(255,255,255,.9)]">
+                          {dataTask.map((data, index) => {
+                            const { project, tasks } = data;
 
-                          return tasks?.length ? (
-                            <Fragment key={index}>
-                              <tr className="border-none">
-                                <td colSpan={6} className="py-2 pr-3">
-                                  <span style={{ color: project.hex_color }}>
-                                    {project.name}
-                                  </span>
-                                </td>
-                              </tr>
-                              {tasks?.length
-                                ? tasks.map((task, index) => {
-                                    const {
-                                      id,
-                                      name,
-                                      task_status,
-                                      assignees,
-                                      due_date,
-                                      task_priority,
-                                      task_project,
-                                    } = task;
+                            return tasks?.length ? (
+                              <Fragment key={index}>
+                                <tr className="border-none">
+                                  <td colSpan={6} className="py-2 pr-3">
+                                    <span style={{ color: project.hex_color }}>
+                                      {project.name}
+                                    </span>
+                                  </td>
+                                </tr>
+                                {tasks?.length
+                                  ? tasks.map((task, index) => {
+                                      const {
+                                        id,
+                                        name,
+                                        task_status,
+                                        assignees,
+                                        due_date,
+                                        task_priority,
+                                        task_project,
+                                      } = task;
 
-                                    return (
-                                      <Fragment key={index}>
-                                        <tr>
-                                          <td
-                                            className="relative min-h-[24px] w-[340px] cursor-pointer rounded-lg pb-2 pr-3 pt-2.5 text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141] hover:px-3"
-                                            onClick={() =>
-                                              window.slideOverDetail(id)
-                                            }
-                                          >
-                                            <p className="w-[300px] truncate">
-                                              {name}
-                                            </p>
-                                          </td>
-                                          <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
-                                            <Global.Dropdown
-                                              items={taskStatusDropdown}
-                                              fullWidth={true}
-                                              forceOverlap={true}
-                                              className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
+                                      return (
+                                        <Fragment key={index}>
+                                          <tr>
+                                            <td
+                                              className="relative min-h-[24px] w-[340px] cursor-pointer rounded-lg pb-2 pr-3 pt-2.5 text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141] hover:px-3"
+                                              onClick={() =>
+                                                window.slideOverDetail(id)
+                                              }
                                             >
-                                              <Global.Badge
-                                                text={task_status.name}
-                                                hexColor={task_status.hex_color}
-                                              />
-                                            </Global.Dropdown>
-                                          </td>
-                                          <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
-                                            <Global.Dropdown
-                                              items={dataAssignees.map(
-                                                (getAssign, index) => {
-                                                  const {
-                                                    first_name,
-                                                    profile_image,
-                                                  } = getAssign || {};
+                                              <p className="w-[300px] truncate">
+                                                {name}
+                                              </p>
+                                            </td>
+                                            <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
+                                              <Global.Dropdown
+                                                items={taskStatusDropdown}
+                                                fullWidth={true}
+                                                forceOverlap={true}
+                                                className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
+                                              >
+                                                <Global.Badge
+                                                  text={task_status.name}
+                                                  hexColor={
+                                                    task_status.hex_color
+                                                  }
+                                                />
+                                              </Global.Dropdown>
+                                            </td>
+                                            <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
+                                              <Global.Dropdown
+                                                items={dataAssignees.map(
+                                                  (getAssign, index) => {
+                                                    const {
+                                                      first_name,
+                                                      profile_image,
+                                                    } = getAssign || {};
 
-                                                  return {
-                                                    url: "#",
-                                                    onClick: () => {},
-                                                    content: (
-                                                      <div
-                                                        className="flex items-center"
-                                                        key={index}
-                                                      >
-                                                        {profile_image?.length ? (
-                                                          <div className="h-[22px] w-[22px] flex-shrink-0">
-                                                            <img
-                                                              className="h-[22px] w-[22px] rounded-full"
-                                                              src={
-                                                                profile_image
-                                                              }
-                                                              alt=""
-                                                            />
+                                                    return {
+                                                      url: "#",
+                                                      onClick: () => {},
+                                                      content: (
+                                                        <div
+                                                          className="flex items-center"
+                                                          key={index}
+                                                        >
+                                                          {profile_image?.length ? (
+                                                            <div className="h-[22px] w-[22px] flex-shrink-0">
+                                                              <img
+                                                                className="h-[22px] w-[22px] rounded-full"
+                                                                src={
+                                                                  profile_image
+                                                                }
+                                                                alt=""
+                                                              />
+                                                            </div>
+                                                          ) : (
+                                                            <FaUserCircle className="h-[22px] w-[22px] rounded-full" />
+                                                          )}
+                                                          <div className="ml-2">
+                                                            {first_name}
                                                           </div>
+                                                        </div>
+                                                      ),
+                                                      isInnerHTML: false,
+                                                    };
+                                                  }
+                                                )}
+                                                fullWidth={true}
+                                                forceOverlap={true}
+                                                className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
+                                                menuButtonClassName="min-h-[24px]"
+                                              >
+                                                <div className="flex gap-1">
+                                                  {assignees.map(
+                                                    (assign, index) => (
+                                                      <>
+                                                        {assign?.profile_image
+                                                          ?.length ? (
+                                                          <img
+                                                            key={index}
+                                                            className="h-[22px] w-[22px] rounded-full"
+                                                            src={
+                                                              assign.profile_image
+                                                            }
+                                                            alt=""
+                                                          />
                                                         ) : (
                                                           <FaUserCircle className="h-[22px] w-[22px] rounded-full" />
                                                         )}
-                                                        <div className="ml-2">
-                                                          {first_name}
-                                                        </div>
-                                                      </div>
-                                                    ),
-                                                    isInnerHTML: false,
-                                                  };
-                                                }
-                                              )}
-                                              fullWidth={true}
-                                              forceOverlap={true}
-                                              className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
-                                              menuButtonClassName="min-h-[24px]"
-                                            >
-                                              <div className="flex gap-1">
-                                                {assignees.map(
-                                                  (assign, index) => (
-                                                    <>
-                                                      {assign?.profile_image
-                                                        ?.length ? (
-                                                        <img
-                                                          key={index}
-                                                          className="h-[22px] w-[22px] rounded-full"
-                                                          src={
-                                                            assign.profile_image
-                                                          }
-                                                          alt=""
-                                                        />
-                                                      ) : (
-                                                        <FaUserCircle className="h-[22px] w-[22px] rounded-full" />
-                                                      )}
-                                                    </>
-                                                  )
-                                                )}
-                                              </div>
-                                            </Global.Dropdown>
-                                          </td>
-                                          <td className="relative cursor-pointer whitespace-nowrap rounded-lg text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141]">
-                                            <Global.Datepicker
-                                              inputClassName="!px-3 !py-2"
-                                              defaultValue={due_date}
-                                            />
-                                          </td>
-                                          <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
-                                            <Global.Dropdown
-                                              items={taskPriorityDropdown}
-                                              fullWidth={true}
-                                              forceOverlap={true}
-                                              className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
-                                              menuButtonClassName="min-h-[24px]"
-                                            >
-                                              {task_priority ? (
-                                                <span
-                                                  style={{
-                                                    color:
-                                                      task_priority.hex_color,
-                                                  }}
-                                                >
-                                                  {task_priority.name}
-                                                </span>
-                                              ) : (
-                                                <span className="text-[rgba(255,255,255,.9)]">
-                                                  None
-                                                </span>
-                                              )}
-                                            </Global.Dropdown>
-                                          </td>
-                                          <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
-                                            <Global.Dropdown
-                                              items={taskProjectDropdown}
-                                              fullWidth={true}
-                                              forceOverlap={true}
-                                              className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
-                                              menuButtonClassName="min-h-[24px]"
-                                            >
-                                              {task_project ? (
-                                                <span
-                                                  style={{
-                                                    color:
-                                                      task_project.hex_color,
-                                                  }}
-                                                >
-                                                  {task_project.name}
-                                                </span>
-                                              ) : (
-                                                <span className="text-[rgba(255,255,255,.9)]">
-                                                  None
-                                                </span>
-                                              )}
-                                            </Global.Dropdown>
-                                          </td>
-                                        </tr>
-                                        {index + 1 === tasks.length ? (
-                                          <tr className="h-20">
-                                            <td
-                                              colSpan={6}
-                                              className="py-2 pr-3"
-                                            >
-                                              <Global.Button
-                                                type="button"
-                                                color="outlined-secondary"
-                                                size="sm"
-                                                onClick={() =>
-                                                  window.addTaskModal({
-                                                    ...(task_project?.id && {
-                                                      taskProject: task_project,
-                                                    }),
-                                                  })
-                                                }
+                                                      </>
+                                                    )
+                                                  )}
+                                                </div>
+                                              </Global.Dropdown>
+                                            </td>
+                                            <td className="relative cursor-pointer whitespace-nowrap rounded-lg text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141]">
+                                              <Global.Datepicker
+                                                inputClassName="!px-3 !py-2"
+                                                defaultValue={due_date}
+                                              />
+                                            </td>
+                                            <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
+                                              <Global.Dropdown
+                                                items={taskPriorityDropdown}
+                                                fullWidth={true}
+                                                forceOverlap={true}
+                                                className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
+                                                menuButtonClassName="min-h-[24px]"
                                               >
-                                                <MdOutlineAddBox size={18} />{" "}
-                                                New Task
-                                              </Global.Button>
+                                                {task_priority ? (
+                                                  <span
+                                                    style={{
+                                                      color:
+                                                        task_priority.hex_color,
+                                                    }}
+                                                  >
+                                                    {task_priority.name}
+                                                  </span>
+                                                ) : (
+                                                  <span className="text-[rgba(255,255,255,.9)]">
+                                                    None
+                                                  </span>
+                                                )}
+                                              </Global.Dropdown>
+                                            </td>
+                                            <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
+                                              <Global.Dropdown
+                                                items={taskProjectDropdown}
+                                                fullWidth={true}
+                                                forceOverlap={true}
+                                                className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
+                                                menuButtonClassName="min-h-[24px]"
+                                              >
+                                                {task_project ? (
+                                                  <span
+                                                    style={{
+                                                      color:
+                                                        task_project.hex_color,
+                                                    }}
+                                                  >
+                                                    {task_project.name}
+                                                  </span>
+                                                ) : (
+                                                  <span className="text-[rgba(255,255,255,.9)]">
+                                                    None
+                                                  </span>
+                                                )}
+                                              </Global.Dropdown>
                                             </td>
                                           </tr>
-                                        ) : null}
-                                      </Fragment>
-                                    );
-                                  })
-                                : null}
-                            </Fragment>
-                          ) : null;
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                                          {index + 1 === tasks.length &&
+                                          !["draft", "trash"].includes(
+                                            clickedNavId
+                                          ) ? (
+                                            <tr className="h-20">
+                                              <td
+                                                colSpan={6}
+                                                className="py-2 pr-3"
+                                              >
+                                                <Global.Button
+                                                  type="button"
+                                                  color="outlined-secondary"
+                                                  size="sm"
+                                                  onClick={() =>
+                                                    window.addTaskModal({
+                                                      ...(task_project?.id && {
+                                                        taskProject:
+                                                          task_project,
+                                                      }),
+                                                    })
+                                                  }
+                                                >
+                                                  <MdOutlineAddBox size={18} />{" "}
+                                                  New Task
+                                                </Global.Button>
+                                              </td>
+                                            </tr>
+                                          ) : null}
+                                        </Fragment>
+                                      );
+                                    })
+                                  : null}
+                              </Fragment>
+                            ) : null;
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="flex h-[300px] min-w-full flex-col items-center justify-center gap-3 text-center sm:px-6 lg:px-8">
+                      Task not found! <br /> You can create a task by click
+                      button below <br />
+                      <Global.Button
+                        type="button"
+                        color="outlined-secondary"
+                        size="sm"
+                        onClick={() => window.addTaskModal()}
+                      >
+                        <MdOutlineAddBox size={18} /> New Task
+                      </Global.Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -58,15 +58,15 @@ export default function ToastNotification() {
   return (
     <div
       aria-live="assertive"
-      className="pointer-events-none fixed inset-0 z-[99] flex items-end px-4 py-6 sm:items-start sm:p-6"
+      className="pointer-events-none fixed inset-0 z-[99999] flex items-end px-4 py-6 sm:items-start sm:p-6"
     >
-      <div className="flex w-full flex-col items-center space-y-4 sm:items-end">
+      <div className="flex w-full flex-col items-center space-y-4">
         <Transition
           show={show}
           as={Fragment}
           enter="transform ease-out duration-300 transition"
-          enterFrom="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
-          enterTo="translate-y-0 opacity-100 sm:translate-x-0"
+          enterFrom="-translate-y-4 opacity-0"
+          enterTo="translate-y-0 opacity-100"
           leave="transition ease-in duration-100"
           leaveFrom="opacity-100"
           leaveTo="opacity-0"

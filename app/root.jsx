@@ -180,6 +180,33 @@ export default function App() {
     await handleDataActivity(query.workspace_id);
   };
 
+  const handleRefreshDataTask = async (workspaceId) => {
+    const isDefaultPage =
+      clickedNavId &&
+      ["inbox", "draft", "assigned", "created", "trash"].includes(clickedNavId);
+
+    await handleDataTask({
+      workspace_id: workspaceId,
+      ...(clickedNavId === "draft" && {
+        is_draft: 1,
+      }),
+      ...(clickedNavId === "assigned" && {
+        is_assigned: 1,
+      }),
+      ...(clickedNavId === "created" && {
+        is_created: 1,
+      }),
+      ...(clickedNavId === "trash" && {
+        is_trash: 1,
+      }),
+      ...(!isDefaultPage && dataListSelected?.id
+        ? {
+            list_id: dataListSelected.id,
+          }
+        : {}),
+    });
+  };
+
   const handleDataTaskStatus = async (workspaceId) => {
     const response = await getAllAttribute(
       "status",
@@ -303,7 +330,10 @@ export default function App() {
       navigate("/app/auth");
       return;
     } else {
-      if (location.pathname === "/app/auth") navigate(`/app/assigned`);
+      if (location.pathname === "/app/auth") {
+        navigate("/app/assigned");
+        setClickedNavId("assigned");
+      }
     }
 
     handleDataProfile();
@@ -352,9 +382,7 @@ export default function App() {
 
     const isDefaultPage =
       clickedNavId &&
-      ["inbox", "draft", "assigned", "created", "private", "trash"].includes(
-        clickedNavId
-      );
+      ["inbox", "draft", "assigned", "created", "trash"].includes(clickedNavId);
 
     handleDataTask({
       workspace_id: selectedId,
@@ -366,9 +394,6 @@ export default function App() {
       }),
       ...(clickedNavId === "created" && {
         is_created: 1,
-      }),
-      ...(clickedNavId === "private" && {
-        is_private_task: 1,
       }),
       ...(clickedNavId === "trash" && {
         is_trash: 1,
@@ -424,6 +449,7 @@ export default function App() {
             handleDataTaskPriority,
             handleDataTaskProject,
             handleDataTask,
+            handleRefreshDataTask,
             setClickedNavId,
             setTaskProjectSelected,
           }}

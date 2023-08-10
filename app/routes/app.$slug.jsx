@@ -9,18 +9,12 @@ import { RxActivityLog, RxCross2 } from "react-icons/rx";
 import { Dialog, Transition } from "@headlessui/react";
 import { AiOutlinePlus } from "react-icons/ai";
 import { GoPencil } from "react-icons/go";
-import { IoTrashBin, IoNewspaperOutline, IoSend } from "react-icons/io5";
-import { FaUserCircle, FaRegBellSlash } from "react-icons/fa";
-import { BsThreeDots, BsChat } from "react-icons/bs";
+import { IoTrashBin } from "react-icons/io5";
+import { FaUserCircle } from "react-icons/fa";
+import { BiLockAlt } from "react-icons/bi";
 import { register, login, addWorkspace } from "~/lib/api";
 import { convertDate, convertDateWithTime } from "~/lib/utils";
-import {
-  addList,
-  addTask,
-  deleteList,
-  getAllAttribute,
-  updateList,
-} from "../lib/api";
+import { addList, addTask, deleteList, updateList } from "../lib/api";
 
 export const meta = () => [{ title: "Somat App" }];
 
@@ -519,7 +513,13 @@ const ModalAddWorkspace = () => {
 };
 
 const ModalAddList = () => {
-  const { handleDataList } = useContext(Global.RootContext);
+  const {
+    handleDataList,
+    handleSelectedList,
+    clickedNavId,
+    setClickedNavId,
+    dataListSelected,
+  } = useContext(Global.RootContext);
 
   const defaultHexColor = "#B0B0B0";
 
@@ -566,6 +566,8 @@ const ModalAddList = () => {
       setName("");
       setHexColor(defaultHexColor);
       setIsUpdate(false);
+
+      handleSelectedList(clickedNavId);
     }
 
     await handleDataList(localStorage.getItem("selectedWorkspaceId"));
@@ -591,7 +593,10 @@ const ModalAddList = () => {
         setIsUpdate(false);
       }
 
-      navigate("/app/assigned");
+      if (dataListSelected?.id == id) {
+        navigate("/app/assigned");
+        setClickedNavId("assigned");
+      }
 
       await handleDataList(localStorage.getItem("selectedWorkspaceId"));
     };
@@ -725,13 +730,12 @@ const ModalAddTask = () => {
     taskProjectSelected,
     taskPriorityDropdown,
     taskProjectDropdown,
-    handleDataTask,
-    clickedNavId,
     dataListSelected,
     setTaskProjectSelected,
     handleDataTaskStatus,
     handleDataTaskPriority,
     handleDataTaskProject,
+    handleRefreshDataTask,
   } = useContext(Global.RootContext);
 
   const [openModal, setOpenModal] = useState(false);
@@ -746,6 +750,10 @@ const ModalAddTask = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    let is_draft = false;
+
+    if (e.nativeEvent.submitter.name === "draft") is_draft = true;
 
     if (!name) {
       window.showToastNotification({
@@ -777,6 +785,7 @@ const ModalAddTask = () => {
         user_id: dataProfile.id,
         assignees: assigneesSelected,
         workspace_id: Number(localStorage.getItem("selectedWorkspaceId")),
+        is_draft,
         ...(taskPrioritySelected?.id && {
           task_priority_id: taskPrioritySelected.id,
         }),
@@ -797,35 +806,7 @@ const ModalAddTask = () => {
 
     if (code === 200) setOpenModal(false);
 
-    const isDefaultPage =
-      clickedNavId &&
-      ["inbox", "draft", "assigned", "created", "private", "trash"].includes(
-        clickedNavId
-      );
-
-    await handleDataTask({
-      workspace_id: localStorage.getItem("selectedWorkspaceId"),
-      ...(clickedNavId === "draft" && {
-        is_draft: 1,
-      }),
-      ...(clickedNavId === "assigned" && {
-        is_assigned: 1,
-      }),
-      ...(clickedNavId === "created" && {
-        is_created: 1,
-      }),
-      ...(clickedNavId === "private" && {
-        is_private_task: 1,
-      }),
-      ...(clickedNavId === "trash" && {
-        is_trash: 1,
-      }),
-      ...(!isDefaultPage && dataListSelected?.id
-        ? {
-            list_id: dataListSelected.id,
-          }
-        : {}),
-    });
+    await handleRefreshDataTask(localStorage.getItem("selectedWorkspaceId"));
   };
 
   useEffect(() => {
@@ -1121,12 +1102,7 @@ const ModalAddTask = () => {
             <RxCross2 /> Cancel
           </Global.Button>
           <div className="flex gap-2">
-            <Global.Button
-              type="button"
-              color="light"
-              size="sm"
-              onClick={() => setOpenModal(false)}
-            >
+            <Global.Button type="submit" color="light" size="sm" name="draft">
               <GoPencil /> Save to draft
             </Global.Button>
             <Form.Submit asChild>
@@ -1184,6 +1160,7 @@ const SlideOverActivity = () => {
                         ? dataActivity.map((item, index) => {
                             const {
                               task_name,
+                              task_temp_name,
                               task_id,
                               profile_image,
                               message,
@@ -1200,7 +1177,7 @@ const SlideOverActivity = () => {
                               >
                                 <div className="flex items-center justify-between gap-2">
                                   <div className="max-w-[150px] truncate text-sm text-[rgba(255,255,255,.9)]">
-                                    {task_name}
+                                    {task_name || task_temp_name}
                                   </div>
                                   <div className="flex-grow text-right text-xs">
                                     {convertDateWithTime(new Date(created_at))}

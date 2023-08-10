@@ -144,16 +144,6 @@ function SidebarWrapper(props) {
       ),
     },
     {
-      id: "private",
-      url: isAuthPage ? "/app/auth" : "/app/private",
-      content: (
-        <>
-          <BiLockAlt size={18} />
-          Private tasks
-        </>
-      ),
-    },
-    {
       id: "trash",
       url: isAuthPage ? "/app/auth" : "/app/trash",
       content: (

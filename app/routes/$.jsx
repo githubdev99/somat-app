@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "@remix-run/react";
+import { useContext } from "react";
 import { Global } from "~/components";
 
 export const meta = () => [
@@ -8,6 +9,8 @@ export const meta = () => [
 ];
 
 export default function Index() {
+  const { setClickedNavId } = useContext(Global.RootContext);
+
   const navigate = useNavigate();
 
   return (
@@ -24,11 +27,14 @@ export default function Index() {
         </p>
         <div className="mt-5 flex items-center justify-center gap-x-6">
           <span
-            onClick={() =>
-              !localStorage.getItem("token")
-                ? navigate("/app/auth")
-                : navigate(`/app/assigned`)
-            }
+            onClick={() => {
+              if (!localStorage.getItem("token")) {
+                navigate("/app/auth");
+              } else {
+                navigate("/app/assigned");
+                setClickedNavId("assigned");
+              }
+            }}
           >
             <Global.Button type="button" color="outlined-secondary" size="sm">
               Go back home

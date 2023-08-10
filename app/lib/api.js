@@ -527,3 +527,61 @@ export const getAllTaskHistory = async (workspace_id, token) => {
     .then((result) => result)
     .catch((error) => error);
 };
+
+export const getOneTaskHistory = async (id, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Authorization", token);
+
+  var requestOptions = {
+    method: "GET",
+    headers: myHeaders,
+    redirect: "follow",
+  };
+
+  return await fetch(
+    `${window.ENV.API_URL}/task/history/detail/${id}`,
+    requestOptions
+  )
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};
+
+export const updateTask = async (payload, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Content-Type", "application/json");
+  myHeaders.append("Authorization", token);
+
+  var raw = JSON.stringify(payload);
+
+  var requestOptions = {
+    method: "PUT",
+    headers: myHeaders,
+    body: raw,
+    redirect: "follow",
+  };
+
+  return await fetch(`${window.ENV.API_URL}/task`, requestOptions)
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};
+
+export const emptyTask = async (workspace_id, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Authorization", token);
+
+  var requestOptions = {
+    method: "DELETE",
+    headers: myHeaders,
+    redirect: "follow",
+  };
+
+  return await fetch(
+    `${window.ENV.API_URL}/task/empty/${workspace_id}`,
+    requestOptions
+  )
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};

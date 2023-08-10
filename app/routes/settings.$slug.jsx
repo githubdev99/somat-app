@@ -2,7 +2,7 @@ import * as Form from "@radix-ui/react-form";
 import { useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/node";
 import { Global, Layout } from "~/components";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { RxCross2 } from "react-icons/rx";
 import { AiOutlinePlus } from "react-icons/ai";
 import { BsCheckSquare, BsSave2, BsTag } from "react-icons/bs";
@@ -15,6 +15,12 @@ export const loader = async (data) => {
 };
 
 export default function Settings() {
+  const {
+    handleDataTaskStatus,
+    handleDataTaskPriority,
+    handleDataTaskProject,
+  } = useContext(Global.RootContext);
+
   const data = useLoaderData();
 
   // For attribute settings
@@ -78,6 +84,10 @@ export default function Settings() {
 
     setIsLoading(false);
     setDatas(response?.data);
+
+    handleDataTaskStatus(localStorage.getItem("selectedWorkspaceId"));
+    handleDataTaskPriority(localStorage.getItem("selectedWorkspaceId"));
+    handleDataTaskProject(localStorage.getItem("selectedWorkspaceId"));
   };
   // End for attribute settings
 
