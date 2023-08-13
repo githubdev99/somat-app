@@ -51,6 +51,7 @@ export default function App() {
   const { params } = data || {};
   const { slug } = params || {};
 
+  const [isLoadingDataTask, setIsLoadingDataTask] = useState(true);
   const [token, setToken] = useState(null);
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState(null);
   const [dataProfile, setDataProfile] = useState(null);
@@ -171,11 +172,15 @@ export default function App() {
   };
 
   const handleDataTask = async (query) => {
+    setIsLoadingDataTask(true);
+
     const response = await getAllTask(query, localStorage.getItem("token"));
 
     if (response?.status?.code !== 200) return;
 
     setDataTask(response?.data);
+
+    setIsLoadingDataTask(false);
 
     await handleDataActivity(query.workspace_id);
   };
@@ -417,6 +422,7 @@ export default function App() {
       <body className="h-full">
         <Global.RootContext.Provider
           value={{
+            isLoadingDataTask,
             token,
             selectedWorkspaceId,
             dataProfile,
@@ -450,6 +456,7 @@ export default function App() {
             handleDataTaskProject,
             handleDataTask,
             handleRefreshDataTask,
+            handleDataAssignees,
             setClickedNavId,
             setTaskProjectSelected,
           }}

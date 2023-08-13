@@ -6,7 +6,12 @@ import { Global } from "~/components";
 import { updateProfile, updateProfileImage } from "~/lib/api";
 
 export default function Profile() {
-  const { dataProfile, handleDataProfile } = useContext(Global.RootContext);
+  const {
+    dataProfile,
+    handleDataProfile,
+    handleDataAssignees,
+    handleRefreshDataTask,
+  } = useContext(Global.RootContext);
 
   const { email } = dataProfile || {};
 
@@ -45,6 +50,8 @@ export default function Profile() {
     });
 
     await handleDataProfile();
+    await handleDataAssignees(localStorage.getItem("selectedWorkspaceId"));
+    await handleRefreshDataTask(localStorage.getItem("selectedWorkspaceId"));
   };
 
   const handleChangeProfileImage = (e) => {

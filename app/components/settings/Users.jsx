@@ -11,7 +11,7 @@ import {
 import { arrayToCsv, convertDate, downloadBlob } from "~/lib/utils";
 
 export default function Users() {
-  const { dataWorkspaceSelected } = useContext(Global.RootContext);
+  const { dataWorkspaceSelected, dataProfile } = useContext(Global.RootContext);
 
   const { is_owner, name: workspace_name } = dataWorkspaceSelected || {};
 
@@ -252,6 +252,7 @@ export default function Users() {
                   <>
                     {dataUsers.map((user, index) => {
                       const {
+                        id,
                         first_name,
                         last_name,
                         email,
@@ -283,7 +284,7 @@ export default function Users() {
                           <td className="px-3 py-1 font-normal">
                             {user_is_owner ? "Owner" : "Employee"}
                           </td>
-                          {is_owner && (
+                          {is_owner && id != dataProfile?.id ? (
                             <td className="px-3 py-1 font-normal">
                               <Global.Button
                                 type="button"
@@ -293,7 +294,7 @@ export default function Users() {
                                 Remove
                               </Global.Button>
                             </td>
-                          )}
+                          ) : null}
                         </tr>
                       );
                     })}

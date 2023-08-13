@@ -1,12 +1,31 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import * as Form from "@radix-ui/react-form";
 import { Global } from "~/components";
-import React, { Fragment, useContext, useEffect, useState } from "react";
+import React, {
+  Fragment,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { BsThreeDots, BsChat } from "react-icons/bs";
 import { FaRegBellSlash, FaUserCircle } from "react-icons/fa";
 import { IoNewspaperOutline, IoSend } from "react-icons/io5";
-import { getOneTask, getOneTaskHistory, updateTask } from "~/lib/api";
-import { convertDate, convertDateWithTime } from "~/lib/utils";
+import {
+  emptyTask,
+  getOneTask,
+  getOneTaskHistory,
+  taskChat,
+  updateTask,
+} from "~/lib/api";
+import {
+  arrayToCsv,
+  convertDate,
+  convertDateSqlFormat,
+  convertDateWithTime,
+  downloadBlob,
+} from "~/lib/utils";
 
 export default function SlideOverDetail() {
   const {
@@ -24,15 +43,20 @@ export default function SlideOverDetail() {
   const [open, setOpen] = useState(false);
   const [detailDataTask, setDetailDataTask] = useState(null);
   const [detailDataTaskHistory, setDetailDataTaskHistory] = useState([]);
+  const [isLoadingDataTaskHistory, setIsLoadingDataTaskHistory] =
+    useState(true);
   const [assigneesSelected, setAssigneesSelected] = useState([]);
   const [listDropdown, setListDropdown] = useState([]);
 
   const handleDetailDataTaskHistory = async (id) => {
+    setIsLoadingDataTaskHistory(true);
+
     const response = await getOneTaskHistory(id, localStorage.getItem("token"));
 
     if (!response?.data) return;
 
     setDetailDataTaskHistory(response?.data);
+    setIsLoadingDataTaskHistory(false);
   };
 
   const handleDetailDataTask = async (id) => {
@@ -55,13 +79,19 @@ export default function SlideOverDetail() {
 
   const handleDeleteTask = (id) => {
     const fetchDeleteTask = async () => {
-      const response = await updateTask(
-        {
-          id,
-          is_deleted: true,
-        },
-        localStorage.getItem("token")
-      );
+      const response = detailDataTask.is_deleted
+        ? await emptyTask(
+            localStorage.getItem("selectedWorkspaceId"),
+            localStorage.getItem("token"),
+            id
+          )
+        : await updateTask(
+            {
+              id,
+              is_deleted: true,
+            },
+            localStorage.getItem("token")
+          );
 
       const { code, message } = response?.status || {};
 
@@ -77,8 +107,12 @@ export default function SlideOverDetail() {
     };
 
     window.showAlertConfirmation({
-      title: `Confirm Move to Trash`,
-      message: `Are you sure move this task to trash ?`,
+      title: detailDataTask.is_deleted
+        ? `Confirm Permanently Delete`
+        : `Confirm Move to Trash`,
+      message: detailDataTask.is_deleted
+        ? `Are you sure to delete permanently this task ?`
+        : `Are you sure move this task to trash ?`,
       onSubmit: fetchDeleteTask,
       color: "danger",
     });
@@ -114,6 +148,25 @@ export default function SlideOverDetail() {
     handleDataTaskPriority(localStorage.getItem("selectedWorkspaceId"));
     handleDataTaskProject(localStorage.getItem("selectedWorkspaceId"));
   }, [open]);
+
+  let rowCsvTaskHistory = [["Task ID", "Sender", "Message", "Created At"]];
+  detailDataTaskHistory.map((data) => {
+    const {
+      task_id,
+      message,
+      user_first_name,
+      user_last_name,
+      is_system,
+      created_at,
+    } = data;
+
+    return rowCsvTaskHistory.push([
+      task_id,
+      is_system ? "System" : user_first_name + " " + user_last_name,
+      message,
+      convertDateSqlFormat(created_at),
+    ]);
+  });
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -168,14 +221,24 @@ export default function SlideOverDetail() {
                               <Global.Dropdown
                                 items={[
                                   {
-                                    url: "#",
+                                    isDisabledLink: true,
                                     content: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M246.6 9.4c-12.5-12.5-32.8-12.5-45.3 0l-128 128c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 109.3V320c0 17.7 14.3 32 32 32s32-14.3 32-32V109.3l73.4 73.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-128-128zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64c0 53 43 96 96 96H352c53 0 96-43 96-96V352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V352z"/></svg> Export activity history as CSV`,
+                                    onClick: () =>
+                                      downloadBlob(
+                                        arrayToCsv(rowCsvTaskHistory),
+                                        "export-activity-history-task.csv",
+                                        "text/csv;charset=utf-8;"
+                                      ),
                                   },
                                   {
                                     isDisabledLink: true,
                                     onClick: () =>
                                       handleDeleteTask(detailDataTask.id),
-                                    content: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg> Move to Trash`,
+                                    content: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg> ${
+                                      detailDataTask.is_deleted
+                                        ? "Delete Permanently This Task"
+                                        : "Move to Trash"
+                                    }`,
                                   },
                                 ]}
                               >
@@ -443,8 +506,11 @@ export default function SlideOverDetail() {
                           className="h-full"
                           detailDataTask={detailDataTask}
                           detailDataTaskHistory={detailDataTaskHistory}
+                          handleDetailDataTaskHistory={
+                            handleDetailDataTaskHistory
+                          }
                         >
-                          <TabComponent />
+                          {isLoadingDataTaskHistory ? null : <TabComponent />}
                         </CardDetailComponent>
                       </div>
                     </div>
@@ -473,9 +539,17 @@ const CardDetailComponent = ({ children, className = "", ...otherProps }) => {
   );
 };
 
-const TabComponent = ({ detailDataTask, detailDataTaskHistory }) => {
+const TabComponent = ({
+  detailDataTask,
+  detailDataTaskHistory,
+  handleDetailDataTaskHistory,
+}) => {
   const [selectedComponent, setSelectedComponent] = useState(
-    <ChatComponent data={detailDataTaskHistory} />
+    <ChatComponent
+      detailDataTask={detailDataTask}
+      detailDataTaskHistory={detailDataTaskHistory}
+      handleDetailDataTaskHistory={handleDetailDataTaskHistory}
+    />
   );
   const [selectedId, setSelectedId] = useState("chat");
 
@@ -485,7 +559,13 @@ const TabComponent = ({ detailDataTask, detailDataTaskHistory }) => {
       name: "Chat",
       href: "#",
       icon: BsChat,
-      component: <ChatComponent data={detailDataTaskHistory} />,
+      component: (
+        <ChatComponent
+          detailDataTask={detailDataTask}
+          detailDataTaskHistory={detailDataTaskHistory}
+          handleDetailDataTaskHistory={handleDetailDataTaskHistory}
+        />
+      ),
     },
     {
       id: "description",
@@ -548,55 +628,104 @@ const TabComponent = ({ detailDataTask, detailDataTaskHistory }) => {
   );
 };
 
-const ChatComponent = ({ data }) => {
-  const ChatBlock = ({
-    children,
-    userImage,
-    userImageText,
-    isReadUser = false,
-  }) => {
+const ChatComponent = ({
+  detailDataTask,
+  detailDataTaskHistory,
+  handleDetailDataTaskHistory,
+}) => {
+  const { dataProfile } = useContext(Global.RootContext);
+
+  const { id: task_id } = detailDataTask || {};
+  const { profile_image } = dataProfile || {};
+
+  const [chat, setChat] = useState("");
+
+  const inputChatRef = useRef(null);
+
+  const handleSubmitChat = async (e) => {
+    e.preventDefault();
+
+    if (!chat) {
+      window.showToastNotification({
+        type: "failed",
+        title: "Info!",
+        message: "Message is required",
+      });
+
+      return;
+    }
+
+    const response = await taskChat(
+      {
+        task_id,
+        message: chat,
+      },
+      localStorage.getItem("token")
+    );
+
+    const { code } = response?.status || {};
+
+    if (code === 200) {
+      setChat("");
+    }
+
+    await handleDetailDataTaskHistory(task_id);
+  };
+
+  const ChatBlock = ({ children, dataItem }) => {
+    const { is_system, user_profile_image } = dataItem || {};
+
     return (
       <div className="grid auto-rows-[minmax(28px,auto)] grid-cols-[[userPicture]_28px_[content]_minmax(0,1fr)_[readUsersOverflow]_auto_[readUsers]_60px] gap-x-[10px] gap-y-[4px] py-1">
         <div className="col-start-[userPicture] row-start-1 self-end">
-          {userImage || userImageText ? (
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-green-400 text-sm text-slate-800">
-              {userImageText ? "D" : "image"}
-            </span>
-          ) : null}
+          {is_system ? null : (
+            <>
+              {user_profile_image ? (
+                <img
+                  className="h-7 w-7 rounded-full"
+                  src={user_profile_image}
+                  alt=""
+                />
+              ) : (
+                <FaUserCircle className="h-7 w-7 rounded-full" />
+              )}
+            </>
+          )}
         </div>
         <div>{children}</div>
         <div></div>
-        <div className="relative">
-          {isReadUser && (
-            <span className="absolute -bottom-1 left-5 flex h-4 w-4 items-center justify-center rounded-full bg-green-400 text-[8px] text-slate-800">
-              D
-            </span>
-          )}
-        </div>
       </div>
     );
   };
 
-  const ChatHistory = ({ children, ...otherProps }) => {
+  const ChatHistory = ({ children, dataItem, ...otherProps }) => {
+    const { user_first_name, user_last_name } = dataItem || {};
+
     return (
-      <ChatBlock {...otherProps}>
-        <span>Devan Ramadhan</span>
-        <div className="c-chat-history mt-1 rounded-md bg-[rgba(255,255,255,.14)] px-[10px] py-1 text-[15px] text-[#FFFFFFE6]">
+      <ChatBlock dataItem={dataItem} {...otherProps}>
+        <span>
+          {user_first_name} {user_last_name}
+        </span>
+        <div className="c-chat-history mt-1 w-fit rounded-md bg-[rgba(255,255,255,.14)] px-[10px] py-1 text-[15px] text-[#FFFFFFE6]">
           {children}
         </div>
       </ChatBlock>
     );
   };
 
+  useEffect(() => {
+    inputChatRef.current?.focus();
+  }, []);
+
   return (
     <>
       <div className="h-[425px] overflow-auto px-5 py-2 text-[12px]">
-        {data?.map((item, index) => {
-          const { message, created_at } = item;
+        {detailDataTaskHistory?.map((item, index) => {
+          const { message, created_at, is_system } = item;
 
           let createdAt = new Date(created_at);
-          let createdAtNext = data[index + 1]?.created_at
-            ? new Date(data[index + 1].created_at)
+          let createdAtNext = detailDataTaskHistory[index + 1]?.created_at
+            ? new Date(detailDataTaskHistory[index + 1].created_at)
             : null;
 
           return (
@@ -608,98 +737,50 @@ const ChatComponent = ({ data }) => {
                   {convertDateWithTime(new Date(created_at))}
                 </p>
               ) : null}
-              <ChatBlock key={index}>
-                <div dangerouslySetInnerHTML={{ __html: message }}></div>
-              </ChatBlock>
+              {is_system ? (
+                <ChatBlock key={index} dataItem={item}>
+                  <div dangerouslySetInnerHTML={{ __html: message }}></div>
+                </ChatBlock>
+              ) : (
+                <ChatHistory key={index} dataItem={item}>
+                  <div dangerouslySetInnerHTML={{ __html: message }}></div>
+                </ChatHistory>
+              )}
             </>
           );
         })}
-
-        <ChatHistory userImageText="D" isReadUser={true}>
-          <div>
-            <p>
-              Mohon maaf pak sebelumnya jika pengerjaannya cukup lama,
-              <br />
-              saya ada kesulitan untuk me looping di bagian submissionnya
-            </p>
-            <p>Untuk data" db nya sudah di export dari production</p>
-            <p>Regulasi</p>
-            <ul>
-              <li>
-                <p>
-                  Contoh csv yg semua submissionnya di jadikan kolom di csv
-                  <br />
-                  <a href="https://files.height.app/be5d0a18-ce7e-469a-82aa-37421bf8710c/ugFRJjCc4r5C6KoYOVV4P/Regulasi-2023-05-20_10_20_06.csv">
-                    Regulasi-2023-05-20 10 20 06.csv
-                  </a>
-                </p>
-              </li>
-              <li>
-                <p>
-                  Contoh csv yg submissionnya di jadikan JSON
-                  <br />
-                  <a href="https://files.height.app/be5d0a18-ce7e-469a-82aa-37421bf8710c/-4b_Chc7DYEoQMzQaB71g/Submissions_JSON-2023-05-20_10_21_18.csv">
-                    Submissions JSON-2023-05-20 10 21 18.csv
-                  </a>
-                </p>
-              </li>
-            </ul>
-            <p>Survey</p>
-            <ul>
-              <li>
-                <p>
-                  Contoh csv yg semua submissionnya di jadikan kolom di csv
-                  <br />
-                  Untuk di bagian survey yg semua submissionnya di jadikan kolom
-                  di csv, masih IN PROGRESS
-                </p>
-              </li>
-              <li>
-                <p>
-                  Contoh csv yg submissionnya di jadikan JSON
-                  <br />
-                  <a href="https://files.height.app/be5d0a18-ce7e-469a-82aa-37421bf8710c/4U93LZac_pLGWfIpBakVb/Submissions_JSON-2023-05-20_10_22_13.csv">
-                    Submissions JSON-2023-05-20 10 22 13.csv
-                  </a>
-                </p>
-              </li>
-            </ul>
-            <p>
-              Mohon maaf pak jika belum di push ke github, karena masih butuh
-              konfirmasi dari pak gita dan untuk Survery masih In Progress
-            </p>
-            <p>
-              Berikut file kodingannya
-              <br />
-              <a href="https://files.height.app/be5d0a18-ce7e-469a-82aa-37421bf8710c/e7w5Qk0D6WLcj4HoCposQ/CustomExport.php">
-                CustomExport.php
-              </a>
-              <span className="mdEditedPlugin"> (edited)</span>
-            </p>
-          </div>
-        </ChatHistory>
       </div>
-      <div className="grid auto-rows-[minmax(28px,auto)] grid-cols-[[userPicture]_28px_[content]_minmax(0,1fr)_[readUsersOverflow]_auto_[readUsers]_60px] gap-x-[14px] gap-y-[4px] border-t border-[rgba(255,255,255,.1)] px-5 pb-1 pt-3 text-[12px]">
+      <Form.Root
+        className="grid auto-rows-[minmax(28px,auto)] grid-cols-[[userPicture]_28px_[content]_minmax(0,1fr)_[readUsersOverflow]_auto_[readUsers]_60px] gap-x-[14px] gap-y-[4px] border-t border-[rgba(255,255,255,.1)] px-5 pb-1 pt-5 text-[12px]"
+        onSubmit={handleSubmitChat}
+      >
         <div className="col-start-[userPicture] row-start-1 self-center">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-green-400 text-sm text-slate-800">
-            D
-          </span>
+          {profile_image ? (
+            <img className="h-7 w-7 rounded-full" src={profile_image} alt="" />
+          ) : (
+            <FaUserCircle className="h-7 w-7 rounded-full" />
+          )}
         </div>
         <div>
           <input
+            ref={inputChatRef}
             id="chat"
             name="chat"
             type="text"
             autoComplete="off"
             className="block w-full rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+            onChange={(e) => setChat(e.target.value)}
           />
         </div>
-        <div className="self-center">
-          <button className="flex items-center justify-center rounded-full bg-[#D8D8D8] p-2 text-[#1F1F1F] transition duration-100 ease-in hover:bg-[#5A5A5A] active:opacity-80 disabled:bg-[#5A5A5A]">
+        <Form.Submit className="self-center" asChild>
+          <button
+            type="submit"
+            className="flex items-center justify-center rounded-full bg-[#D8D8D8] p-2 text-[#1F1F1F] transition duration-100 ease-in hover:bg-[#5A5A5A] active:opacity-80 disabled:bg-[#5A5A5A]"
+          >
             <IoSend size={13} />
           </button>
-        </div>
-      </div>
+        </Form.Submit>
+      </Form.Root>
     </>
   );
 };

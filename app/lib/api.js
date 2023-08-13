@@ -567,7 +567,7 @@ export const updateTask = async (payload, token) => {
     .catch((error) => error);
 };
 
-export const emptyTask = async (workspace_id, token) => {
+export const emptyTask = async (workspace_id, token, id = "") => {
   var myHeaders = new Headers();
   myHeaders.append("Authorization", token);
 
@@ -578,9 +578,29 @@ export const emptyTask = async (workspace_id, token) => {
   };
 
   return await fetch(
-    `${window.ENV.API_URL}/task/empty/${workspace_id}`,
+    `${window.ENV.API_URL}/task/empty/${workspace_id}?id=${id}`,
     requestOptions
   )
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};
+
+export const taskChat = async (payload, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Content-Type", "application/json");
+  myHeaders.append("Authorization", token);
+
+  var raw = JSON.stringify(payload);
+
+  var requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: raw,
+    redirect: "follow",
+  };
+
+  return await fetch(`${window.ENV.API_URL}/task/chat`, requestOptions)
     .then((response) => response.json())
     .then((result) => result)
     .catch((error) => error);

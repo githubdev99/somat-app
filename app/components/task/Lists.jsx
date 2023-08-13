@@ -14,6 +14,7 @@ import { emptyTask } from "~/lib/api";
 
 export default function Lists(props) {
   const {
+    isLoadingDataTask,
     dataListSelected,
     handleSelectedList,
     dataTask,
@@ -71,6 +72,7 @@ export default function Lists(props) {
 
   let rowCsvTasks = [
     [
+      "ID",
       "Task",
       "Status",
       "Assignees",
@@ -85,6 +87,7 @@ export default function Lists(props) {
 
     return tasks.map((task) => {
       const {
+        id,
         name,
         task_status,
         assignees,
@@ -95,6 +98,7 @@ export default function Lists(props) {
       } = task;
 
       return rowCsvTasks.push([
+        id,
         name,
         task_status.name,
         assignees.map(({ first_name }) => first_name).join(", "),
@@ -145,18 +149,6 @@ export default function Lists(props) {
     },
   ];
 
-  if (!isDefaultPage)
-    itemDropdownNav.push({
-      isDisabledLink: true,
-      content: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg> Move List to Trash`,
-      onClick: () =>
-        window.showAlertConfirmation({
-          color: "danger",
-          title: "Empty list",
-          message: "Are you sure to empty this list?",
-        }),
-    });
-
   useEffect(() => {
     if (!isDefaultPage) handleSelectedList(slug);
   }, []);
@@ -191,13 +183,24 @@ export default function Lists(props) {
                 {titlePage}
               </span>
             ) : (
-              titlePage
+              <>
+                {clickedNavId === "trash" ? (
+                  <>
+                    {titlePage}{" "}
+                    <p className="ml-2 text-xs">
+                      Empty trash for permanently delete this tasks
+                    </p>
+                  </>
+                ) : (
+                  titlePage
+                )}
+              </>
             )}
           </div>
           <div className="flex flex-row items-center gap-2">
             {slug === "trash" ? (
               <div>
-                {dataTask?.length ? (
+                {rowCsvTasks?.length > 1 ? (
                   <Global.Button
                     type="button"
                     color="danger"
@@ -228,7 +231,7 @@ export default function Lists(props) {
         </div>
       </div>
 
-      {isAuthPage ? null : (
+      {isAuthPage || isLoadingDataTask ? null : (
         <>
           <main className="h-full max-w-full overflow-x-auto pb-10 pt-4">
             <div className="px-4 sm:px-6 lg:px-8">
@@ -477,16 +480,25 @@ export default function Lists(props) {
                     </div>
                   ) : (
                     <div className="flex h-[300px] min-w-full flex-col items-center justify-center gap-3 text-center sm:px-6 lg:px-8">
-                      Task not found! <br /> You can create a task by click
-                      button below <br />
-                      <Global.Button
-                        type="button"
-                        color="outlined-secondary"
-                        size="sm"
-                        onClick={() => window.addTaskModal()}
-                      >
-                        <MdOutlineAddBox size={18} /> New Task
-                      </Global.Button>
+                      {clickedNavId === "trash" ? (
+                        <>
+                          No task found in trash <br />
+                          Tasks will move here before permanently deleted
+                        </>
+                      ) : (
+                        <>
+                          Task not found! <br /> You can create a task by click
+                          button below <br />
+                          <Global.Button
+                            type="button"
+                            color="outlined-secondary"
+                            size="sm"
+                            onClick={() => window.addTaskModal()}
+                          >
+                            <MdOutlineAddBox size={18} /> New Task
+                          </Global.Button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>

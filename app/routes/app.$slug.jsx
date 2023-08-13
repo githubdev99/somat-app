@@ -11,7 +11,6 @@ import { AiOutlinePlus } from "react-icons/ai";
 import { GoPencil } from "react-icons/go";
 import { IoTrashBin } from "react-icons/io5";
 import { FaUserCircle } from "react-icons/fa";
-import { BiLockAlt } from "react-icons/bi";
 import { register, login, addWorkspace } from "~/lib/api";
 import { convertDate, convertDateWithTime } from "~/lib/utils";
 import { addList, addTask, deleteList, updateList } from "../lib/api";
@@ -1162,8 +1161,10 @@ const SlideOverActivity = () => {
                               task_name,
                               task_temp_name,
                               task_id,
-                              profile_image,
+                              user_first_name,
+                              user_profile_image,
                               message,
+                              is_system,
                               created_at,
                             } = item;
 
@@ -1185,10 +1186,10 @@ const SlideOverActivity = () => {
                                 </div>
                                 <div className="mt-1 flex">
                                   <div className="mt-0.5">
-                                    {profile_image?.length ? (
+                                    {user_profile_image?.length ? (
                                       <img
                                         className="h-[16px] w-[16px] rounded-full"
-                                        src={profile_image}
+                                        src={user_profile_image}
                                         alt=""
                                       />
                                     ) : (
@@ -1198,7 +1199,7 @@ const SlideOverActivity = () => {
                                   <div className="ml-2 max-w-[93%] text-xs">
                                     <div
                                       dangerouslySetInnerHTML={{
-                                        __html: message,
+                                        __html: `${user_first_name}: ${message}`,
                                       }}
                                     ></div>
                                   </div>
