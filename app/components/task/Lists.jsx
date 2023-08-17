@@ -24,7 +24,10 @@ export default function Lists(props) {
     dataAssignees,
     clickedNavId,
     handleRefreshDataTask,
+    dataWorkspaceSelected,
   } = useContext(Global.RootContext);
+
+  const { is_owner } = dataWorkspaceSelected || {};
 
   const { data, setSidebarOpen } = props;
   const { params } = data || {};
@@ -198,7 +201,7 @@ export default function Lists(props) {
             )}
           </div>
           <div className="flex flex-row items-center gap-2">
-            {slug === "trash" ? (
+            {slug === "trash" && is_owner ? (
               <div>
                 {rowCsvTasks?.length > 1 ? (
                   <Global.Button

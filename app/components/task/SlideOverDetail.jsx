@@ -38,7 +38,10 @@ export default function SlideOverDetail() {
     taskProjectDropdown,
     taskPriorityDropdown,
     handleRefreshDataTask,
+    dataWorkspaceSelected,
   } = useContext(Global.RootContext);
+
+  const { is_owner } = dataWorkspaceSelected || {};
 
   const [open, setOpen] = useState(false);
   const [detailDataTask, setDetailDataTask] = useState(null);
@@ -193,6 +196,29 @@ export default function SlideOverDetail() {
     ]);
   });
 
+  let optionTask = [
+    {
+      isDisabledLink: true,
+      content: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M246.6 9.4c-12.5-12.5-32.8-12.5-45.3 0l-128 128c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 109.3V320c0 17.7 14.3 32 32 32s32-14.3 32-32V109.3l73.4 73.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-128-128zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64c0 53 43 96 96 96H352c53 0 96-43 96-96V352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V352z"/></svg> Export activity history as CSV`,
+      onClick: () =>
+        downloadBlob(
+          arrayToCsv(rowCsvTaskHistory),
+          "export-activity-history-task.csv",
+          "text/csv;charset=utf-8;"
+        ),
+    },
+  ];
+  if (is_owner)
+    optionTask.push({
+      isDisabledLink: true,
+      onClick: () => handleDeleteTask(detailDataTask.id),
+      content: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg> ${
+        detailDataTask.is_deleted
+          ? "Delete Permanently This Task"
+          : "Move to Trash"
+      }`,
+    });
+
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog
@@ -243,30 +269,7 @@ export default function SlideOverDetail() {
                               </Global.Button>
                             </div>
                             <div>
-                              <Global.Dropdown
-                                items={[
-                                  {
-                                    isDisabledLink: true,
-                                    content: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M246.6 9.4c-12.5-12.5-32.8-12.5-45.3 0l-128 128c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 109.3V320c0 17.7 14.3 32 32 32s32-14.3 32-32V109.3l73.4 73.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-128-128zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64c0 53 43 96 96 96H352c53 0 96-43 96-96V352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V352z"/></svg> Export activity history as CSV`,
-                                    onClick: () =>
-                                      downloadBlob(
-                                        arrayToCsv(rowCsvTaskHistory),
-                                        "export-activity-history-task.csv",
-                                        "text/csv;charset=utf-8;"
-                                      ),
-                                  },
-                                  {
-                                    isDisabledLink: true,
-                                    onClick: () =>
-                                      handleDeleteTask(detailDataTask.id),
-                                    content: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg> ${
-                                      detailDataTask.is_deleted
-                                        ? "Delete Permanently This Task"
-                                        : "Move to Trash"
-                                    }`,
-                                  },
-                                ]}
-                              >
+                              <Global.Dropdown items={optionTask}>
                                 <Global.Button
                                   type="button"
                                   color="transparent"
