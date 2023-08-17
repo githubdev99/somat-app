@@ -224,11 +224,12 @@ export default function App() {
     setDataTaskStatus(response?.data);
     setTaskStatusDropdown([
       ...response?.data?.map((taskStatus) => {
-        const { name, hex_color, states } = taskStatus;
+        const { id, name, hex_color, states } = taskStatus;
 
         if (states === "NOT_STARTED") setTaskStatusSelected(taskStatus);
 
         return {
+          id,
           isDisabledLink: true,
           onClick: () => setTaskStatusSelected(taskStatus),
           content: <Global.Badge text={name} hexColor={hex_color} />,
@@ -261,6 +262,7 @@ export default function App() {
     setTaskPriorityDropdown([
       ...[
         {
+          id: null,
           isDisabledLink: true,
           onClick: () => setTaskPrioritySelected({}),
           content: <span className="text-[rgba(255,255,255,.9)]">None</span>,
@@ -268,9 +270,10 @@ export default function App() {
         },
       ],
       ...response?.data?.map((taskPriority) => {
-        const { name, hex_color } = taskPriority;
+        const { id, name, hex_color } = taskPriority;
 
         return {
+          id,
           isDisabledLink: true,
           onClick: () => setTaskPrioritySelected(taskPriority),
           content: <span style={{ color: hex_color }}>{name}</span>,
@@ -301,6 +304,7 @@ export default function App() {
     setTaskProjectDropdown([
       ...[
         {
+          id: null,
           isDisabledLink: true,
           onClick: () => setTaskProjectSelected({}),
           content: <span className="text-[rgba(255,255,255,.9)]">None</span>,
@@ -308,9 +312,10 @@ export default function App() {
         },
       ],
       ...response?.data?.map((taskProject) => {
-        const { name, hex_color } = taskProject;
+        const { id, name, hex_color } = taskProject;
 
         return {
+          id,
           isDisabledLink: true,
           onClick: () => setTaskProjectSelected(taskProject),
           content: <span style={{ color: hex_color }}>{name}</span>,

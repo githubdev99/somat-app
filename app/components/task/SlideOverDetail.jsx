@@ -23,8 +23,8 @@ import {
   arrayToCsv,
   convertDate,
   convertDateSqlFormat,
-  convertDateWithTime,
   downloadBlob,
+  scrollToElement,
 } from "~/lib/utils";
 
 export default function SlideOverDetail() {
@@ -45,6 +45,7 @@ export default function SlideOverDetail() {
   const [detailDataTaskHistory, setDetailDataTaskHistory] = useState([]);
   const [isLoadingDataTaskHistory, setIsLoadingDataTaskHistory] =
     useState(true);
+  const [isLoadingDataTaskDetail, setIsLoadingDataTaskDetail] = useState(true);
   const [assigneesSelected, setAssigneesSelected] = useState([]);
   const [listDropdown, setListDropdown] = useState([]);
 
@@ -60,6 +61,8 @@ export default function SlideOverDetail() {
   };
 
   const handleDetailDataTask = async (id) => {
+    setIsLoadingDataTaskDetail(true);
+
     const response = await getOneTask(id, localStorage.getItem("token"));
 
     if (!response?.data) {
@@ -74,7 +77,9 @@ export default function SlideOverDetail() {
     await handleDetailDataTaskHistory(id);
 
     setDetailDataTask(response?.data);
+    setAssigneesSelected(response?.data?.assignees);
     setOpen(true);
+    setIsLoadingDataTaskDetail(false);
   };
 
   const handleDeleteTask = (id) => {
@@ -118,6 +123,25 @@ export default function SlideOverDetail() {
     });
   };
 
+  const handleUpdateTask = async (payload) => {
+    if (
+      !payload?.id ||
+      detailDataTask?.task_status_id === payload?.task_status_id ||
+      detailDataTask?.task_priority_id === payload?.task_priority_id ||
+      detailDataTask?.task_project_id === payload?.task_project_id
+    )
+      return;
+
+    const response = await updateTask(payload, localStorage.getItem("token"));
+
+    const { code } = response?.status || {};
+
+    if (code !== 200) return;
+
+    await handleRefreshDataTask(localStorage.getItem("selectedWorkspaceId"));
+    await handleDetailDataTask(payload.id);
+  };
+
   useEffect(() => {
     window.slideOverDetail = (id) => {
       handleDetailDataTask(id);
@@ -132,10 +156,11 @@ export default function SlideOverDetail() {
     if (!open) return;
 
     setListDropdown(
-      dataList?.map((list, index) => {
-        const { name, hex_color } = list;
+      dataList?.map((list) => {
+        const { id, name, hex_color } = list;
 
         return {
+          id,
           isDisabledLink: true,
           onClick: () => {},
           content: <span style={{ color: hex_color }}>{name}</span>,
@@ -190,7 +215,7 @@ export default function SlideOverDetail() {
                 leaveTo="translate-x-full"
               >
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-[730px]">
-                  {detailDataTask?.id ? (
+                  {!isLoadingDataTaskDetail ? (
                     <div className="flex h-full flex-col gap-3 border-l border-[#323232] bg-[#121212] py-3 shadow-2xl">
                       <div className="px-4 sm:px-5">
                         <div className="flex items-center justify-between gap-4">
@@ -284,7 +309,33 @@ export default function SlideOverDetail() {
                                 <td className="h-[31px] w-[120px]">Status</td>
                                 <td className="w-[203px]">
                                   <Global.Dropdown
-                                    items={taskStatusDropdown}
+                                    items={taskStatusDropdown?.map(
+                                      (taskStatus) => {
+                                        const {
+                                          id,
+                                          onClick,
+                                          isBottomLink,
+                                          ...otherTaskStatus
+                                        } = taskStatus;
+
+                                        return {
+                                          ...otherTaskStatus,
+                                          ...(isBottomLink
+                                            ? {
+                                                isBottomLink,
+                                              }
+                                            : {
+                                                onClick: isBottomLink
+                                                  ? () => {}
+                                                  : () =>
+                                                      handleUpdateTask({
+                                                        id: detailDataTask.id,
+                                                        task_status_id: id,
+                                                      }),
+                                              }),
+                                        };
+                                      }
+                                    )}
                                     fullWidth={true}
                                     forceOverlap={true}
                                     className="w-full rounded-lg px-3 py-0.5 transition duration-100 ease-in hover:bg-[#414141]"
@@ -318,16 +369,28 @@ export default function SlideOverDetail() {
                                 <td className="w-[203px]">
                                   <Global.Dropdown
                                     items={dataAssignees?.map((assignees) => {
-                                      const { first_name, profile_image } =
+                                      const { id, first_name, profile_image } =
                                         assignees;
 
+                                      const detailDataTaskAssignees =
+                                        assigneesSelected?.map(
+                                          (assign) => assign.id
+                                        );
+
+                                      const ifUserAssigned =
+                                        !detailDataTaskAssignees.includes(id);
+
                                       return {
+                                        ...(ifUserAssigned
+                                          ? {
+                                              onClick: () =>
+                                                setAssigneesSelected([
+                                                  ...assigneesSelected,
+                                                  assignees,
+                                                ]),
+                                            }
+                                          : {}),
                                         isDisabledLink: true,
-                                        onClick: () =>
-                                          setAssigneesSelected([
-                                            ...detailDataTask.assignees,
-                                            assignees,
-                                          ]),
                                         content: (
                                           <div className="flex items-center">
                                             <div className="h-[22px] w-[22px] flex-shrink-0">
@@ -386,7 +449,12 @@ export default function SlideOverDetail() {
                                   <div className="min-h-[25px] w-full rounded-lg text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141]">
                                     <div className="px-1">
                                       <Global.Datepicker
-                                        onChange={(value) => {}}
+                                        onChange={(value) =>
+                                          handleUpdateTask({
+                                            id: detailDataTask.id,
+                                            due_date: new Date(value),
+                                          })
+                                        }
                                         inputClassName="!px-3 !py-2"
                                         defaultValue={detailDataTask.due_date}
                                         datepickerClassName="top-8 right-10"
@@ -399,7 +467,23 @@ export default function SlideOverDetail() {
                                 <td className="h-[31px] w-[120px]">Lists</td>
                                 <td className="w-[203px]">
                                   <Global.Dropdown
-                                    items={listDropdown}
+                                    items={listDropdown?.map((list) => {
+                                      const {
+                                        id,
+                                        onClick,
+                                        isBottomLink,
+                                        ...otherList
+                                      } = list;
+
+                                      return {
+                                        ...otherList,
+                                        onClick: () =>
+                                          handleUpdateTask({
+                                            id: detailDataTask.id,
+                                            list_id: id,
+                                          }),
+                                      };
+                                    })}
                                     fullWidth={true}
                                     forceOverlap={true}
                                     className="w-full rounded-lg px-3 py-0.5 transition duration-100 ease-in hover:bg-[#414141]"
@@ -424,7 +508,33 @@ export default function SlideOverDetail() {
                                 </td>
                                 <td>
                                   <Global.Dropdown
-                                    items={taskPriorityDropdown}
+                                    items={taskPriorityDropdown?.map(
+                                      (taskPriority) => {
+                                        const {
+                                          id,
+                                          onClick,
+                                          isBottomLink,
+                                          ...otherTaskPriority
+                                        } = taskPriority;
+
+                                        return {
+                                          ...otherTaskPriority,
+                                          ...(isBottomLink
+                                            ? {
+                                                isBottomLink,
+                                              }
+                                            : {
+                                                onClick: isBottomLink
+                                                  ? () => {}
+                                                  : () =>
+                                                      handleUpdateTask({
+                                                        id: detailDataTask.id,
+                                                        task_priority_id: id,
+                                                      }),
+                                              }),
+                                        };
+                                      }
+                                    )}
                                     fullWidth={true}
                                     forceOverlap={true}
                                     className="w-full rounded-lg px-3 py-0.5 transition duration-100 ease-in hover:bg-[#414141]"
@@ -469,7 +579,33 @@ export default function SlideOverDetail() {
                                 </td>
                                 <td>
                                   <Global.Dropdown
-                                    items={taskProjectDropdown}
+                                    items={taskProjectDropdown?.map(
+                                      (taskProject) => {
+                                        const {
+                                          id,
+                                          onClick,
+                                          isBottomLink,
+                                          ...otherTaskProject
+                                        } = taskProject;
+
+                                        return {
+                                          ...otherTaskProject,
+                                          ...(isBottomLink
+                                            ? {
+                                                isBottomLink,
+                                              }
+                                            : {
+                                                onClick: isBottomLink
+                                                  ? () => {}
+                                                  : () =>
+                                                      handleUpdateTask({
+                                                        id: detailDataTask.id,
+                                                        task_project_id: id,
+                                                      }),
+                                              }),
+                                        };
+                                      }
+                                    )}
                                     fullWidth={true}
                                     forceOverlap={true}
                                     className="w-full rounded-lg px-3 py-0.5 transition duration-100 ease-in hover:bg-[#414141]"
@@ -641,6 +777,7 @@ const ChatComponent = ({
   const [chat, setChat] = useState("");
 
   const inputChatRef = useRef(null);
+  const bottomElementRef = useRef(null);
 
   const handleSubmitChat = async (e) => {
     e.preventDefault();
@@ -717,24 +854,35 @@ const ChatComponent = ({
     inputChatRef.current?.focus();
   }, []);
 
+  useEffect(() => {
+    if (!detailDataTaskHistory?.length && !bottomElementRef?.current) return;
+
+    setTimeout(() => {
+      bottomElementRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 200);
+  }, [detailDataTaskHistory, bottomElementRef]);
+
   return (
     <>
-      <div className="h-[425px] overflow-auto px-5 py-2 text-[12px]">
+      <div
+        id="detail-data-task-history"
+        className="h-[425px] overflow-auto px-5 py-2 text-[12px]"
+      >
         {detailDataTaskHistory?.map((item, index) => {
           const { message, created_at, is_system } = item;
 
           let createdAt = new Date(created_at);
-          let createdAtNext = detailDataTaskHistory[index + 1]?.created_at
-            ? new Date(detailDataTaskHistory[index + 1].created_at)
+          let createdAtNext = detailDataTaskHistory[index - 1]?.created_at
+            ? new Date(detailDataTaskHistory[index - 1].created_at)
             : null;
 
           return (
             <>
-              {!index &&
-              createdAtNext &&
-              createdAt.getDate() == createdAtNext.getDate() ? (
-                <p className="mb-2 text-center">
-                  {convertDateWithTime(new Date(created_at))}
+              {!index ||
+              (createdAtNext &&
+                createdAt.getDate() != createdAtNext.getDate()) ? (
+                <p className={`text-center ${index ? "my-2" : "mb-2"}`}>
+                  {convertDate(new Date(createdAt))}
                 </p>
               ) : null}
               {is_system ? (
@@ -749,6 +897,7 @@ const ChatComponent = ({
             </>
           );
         })}
+        <div ref={bottomElementRef}></div>
       </div>
       <Form.Root
         className="grid auto-rows-[minmax(28px,auto)] grid-cols-[[userPicture]_28px_[content]_minmax(0,1fr)_[readUsersOverflow]_auto_[readUsers]_60px] gap-x-[14px] gap-y-[4px] border-t border-[rgba(255,255,255,.1)] px-5 pb-1 pt-5 text-[12px]"

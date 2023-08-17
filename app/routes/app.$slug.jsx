@@ -803,7 +803,14 @@ const ModalAddTask = () => {
       message: message,
     });
 
-    if (code === 200) setOpenModal(false);
+    if (code === 200) {
+      setName("");
+      setDescription(null);
+      setDueDate(null);
+      setListSelected({});
+      setAssigneesSelected([]);
+      setOpenModal(false);
+    }
 
     await handleRefreshDataTask(localStorage.getItem("selectedWorkspaceId"));
   };
