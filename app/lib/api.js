@@ -624,3 +624,22 @@ export const taskChat = async (payload, token) => {
     .then((result) => result)
     .catch((error) => error);
 };
+
+export const deleteUserWorkspace = async (id, workspace_id, token) => {
+  var myHeaders = new Headers();
+  myHeaders.append("Authorization", token);
+
+  var requestOptions = {
+    method: "DELETE",
+    headers: myHeaders,
+    redirect: "follow",
+  };
+
+  return await fetch(
+    `${window.ENV.API_URL}/workspace/users/${workspace_id}/${id}`,
+    requestOptions
+  )
+    .then((response) => response.json())
+    .then((result) => result)
+    .catch((error) => error);
+};

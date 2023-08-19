@@ -4,6 +4,7 @@ import { BsThreeDots } from "react-icons/bs";
 import { FaUserCircle } from "react-icons/fa";
 import { Global } from "~/components";
 import {
+  deleteUserWorkspace,
   getAllInviteWorkspace,
   getAllUsersWorkspace,
   inviteWorkspace,
@@ -21,9 +22,12 @@ export default function Users() {
   const [email, setEmail] = useState("");
   const [dataInvited, setDataInvited] = useState([]);
   const [dataUsers, setDataUsers] = useState([]);
+  const [isLoadingSubmit, setIsLoadingSubmit] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setIsLoadingSubmit(true);
 
     const response = await inviteWorkspace(
       {
@@ -44,6 +48,7 @@ export default function Users() {
     if (code === 200) {
       setOpenModal(false);
       setEmail("");
+      setIsLoadingSubmit(false);
 
       await handleDataInvited();
     }
@@ -77,6 +82,35 @@ export default function Users() {
     setIsLoadingUsers(false);
 
     setDataUsers(response?.data);
+  };
+
+  const handleDeleteUsers = (id) => {
+    const fetchDeleteUsers = async () => {
+      const response = await deleteUserWorkspace(
+        id,
+        localStorage.getItem("selectedWorkspaceId"),
+        localStorage.getItem("token")
+      );
+
+      const { code, message } = response?.status || {};
+
+      if (code !== 200) return;
+
+      window.showToastNotification({
+        type: code === 200 ? "success" : "failed",
+        title: code === 200 ? "Success!" : "Failed!",
+        message: message,
+      });
+
+      await handleDataUsers();
+    };
+
+    window.showAlertConfirmation({
+      title: "Confirm Remove User",
+      message: "Are you sure to remove this user from workspace ?",
+      onSubmit: fetchDeleteUsers,
+      color: "danger",
+    });
   };
 
   useEffect(() => {
@@ -142,8 +176,9 @@ export default function Users() {
                   type="submit"
                   color="outlined-secondary"
                   size="sm"
+                  disabled={isLoadingSubmit}
                 >
-                  Invite
+                  {isLoadingSubmit ? "Loading..." : "Invite"}
                 </Global.Button>
               </Form.Submit>
             </div>
@@ -290,6 +325,7 @@ export default function Users() {
                                 type="button"
                                 color="transparent"
                                 size="sm"
+                                onClick={() => handleDeleteUsers(id)}
                               >
                                 Remove
                               </Global.Button>
