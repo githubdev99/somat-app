@@ -750,10 +750,6 @@ const ModalAddTask = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    let is_draft = false;
-
-    if (e.nativeEvent.submitter.name === "draft") is_draft = true;
-
     if (!name) {
       window.showToastNotification({
         type: "failed",
@@ -784,7 +780,6 @@ const ModalAddTask = () => {
         user_id: dataProfile.id,
         assignees: assigneesSelected,
         workspace_id: Number(localStorage.getItem("selectedWorkspaceId")),
-        is_draft,
         ...(taskPrioritySelected?.id && {
           task_priority_id: taskPrioritySelected.id,
         }),
@@ -1108,9 +1103,6 @@ const ModalAddTask = () => {
             <RxCross2 /> Cancel
           </Global.Button>
           <div className="flex gap-2">
-            <Global.Button type="submit" color="light" size="sm" name="draft">
-              <GoPencil /> Save to draft
-            </Global.Button>
             <Form.Submit asChild>
               <Global.Button type="submit" color="success" size="sm">
                 <AiOutlinePlus /> Create
@@ -1124,7 +1116,7 @@ const ModalAddTask = () => {
 };
 
 const SlideOverActivity = () => {
-  const { dataActivity } = useContext(Global.RootContext);
+  const { dataActivity, handleDataActivity } = useContext(Global.RootContext);
 
   const [open, setOpen] = useState(false);
 
@@ -1133,6 +1125,12 @@ const SlideOverActivity = () => {
       setOpen(true);
     };
   }, []);
+
+  useEffect(() => {
+    if (!open) return;
+
+    handleDataActivity(localStorage.getItem("selectedWorkspaceId"));
+  }, [open]);
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -1206,7 +1204,11 @@ const SlideOverActivity = () => {
                                   <div className="ml-2 max-w-[93%] text-xs">
                                     <div
                                       dangerouslySetInnerHTML={{
-                                        __html: `${user_first_name}: ${message}`,
+                                        __html: `${
+                                          is_system
+                                            ? ""
+                                            : `${user_first_name}: `
+                                        }${message}`,
                                       }}
                                     ></div>
                                   </div>

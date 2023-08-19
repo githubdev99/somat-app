@@ -181,20 +181,15 @@ export default function App() {
     setDataTask(response?.data);
 
     setIsLoadingDataTask(false);
-
-    await handleDataActivity(query.workspace_id);
   };
 
   const handleRefreshDataTask = async (workspaceId) => {
     const isDefaultPage =
       clickedNavId &&
-      ["inbox", "draft", "assigned", "created", "trash"].includes(clickedNavId);
+      ["inbox", "assigned", "created", "trash"].includes(clickedNavId);
 
     await handleDataTask({
       workspace_id: workspaceId,
-      ...(clickedNavId === "draft" && {
-        is_draft: 1,
-      }),
       ...(clickedNavId === "assigned" && {
         is_assigned: 1,
       }),
@@ -392,13 +387,10 @@ export default function App() {
 
     const isDefaultPage =
       clickedNavId &&
-      ["inbox", "draft", "assigned", "created", "trash"].includes(clickedNavId);
+      ["inbox", "assigned", "created", "trash"].includes(clickedNavId);
 
     handleDataTask({
       workspace_id: selectedId,
-      ...(clickedNavId === "draft" && {
-        is_draft: 1,
-      }),
       ...(clickedNavId === "assigned" && {
         is_assigned: 1,
       }),
@@ -464,6 +456,7 @@ export default function App() {
             handleDataAssignees,
             setClickedNavId,
             setTaskProjectSelected,
+            handleDataActivity,
           }}
         >
           <Global.ToastNotification />

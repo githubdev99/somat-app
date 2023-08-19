@@ -24,7 +24,6 @@ import {
   convertDate,
   convertDateSqlFormat,
   downloadBlob,
-  scrollToElement,
 } from "~/lib/utils";
 
 export default function SlideOverDetail() {
@@ -49,7 +48,6 @@ export default function SlideOverDetail() {
   const [isLoadingDataTaskHistory, setIsLoadingDataTaskHistory] =
     useState(true);
   const [isLoadingDataTaskDetail, setIsLoadingDataTaskDetail] = useState(true);
-  const [assigneesSelected, setAssigneesSelected] = useState([]);
   const [listDropdown, setListDropdown] = useState([]);
 
   const handleDetailDataTaskHistory = async (id) => {
@@ -80,14 +78,13 @@ export default function SlideOverDetail() {
     await handleDetailDataTaskHistory(id);
 
     setDetailDataTask(response?.data);
-    setAssigneesSelected(response?.data?.assignees);
     setOpen(true);
     setIsLoadingDataTaskDetail(false);
   };
 
   const handleDeleteTask = (id) => {
     const fetchDeleteTask = async () => {
-      const response = detailDataTask.is_deleted
+      const response = detailDataTask?.is_deleted
         ? await emptyTask(
             localStorage.getItem("selectedWorkspaceId"),
             localStorage.getItem("token"),
@@ -115,10 +112,10 @@ export default function SlideOverDetail() {
     };
 
     window.showAlertConfirmation({
-      title: detailDataTask.is_deleted
+      title: detailDataTask?.is_deleted
         ? `Confirm Permanently Delete`
         : `Confirm Move to Trash`,
-      message: detailDataTask.is_deleted
+      message: detailDataTask?.is_deleted
         ? `Are you sure to delete permanently this task ?`
         : `Are you sure move this task to trash ?`,
       onSubmit: fetchDeleteTask,
@@ -213,7 +210,7 @@ export default function SlideOverDetail() {
       isDisabledLink: true,
       onClick: () => handleDeleteTask(detailDataTask.id),
       content: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg> ${
-        detailDataTask.is_deleted
+        detailDataTask?.is_deleted
           ? "Delete Permanently This Task"
           : "Move to Trash"
       }`,
@@ -245,10 +242,31 @@ export default function SlideOverDetail() {
                     <div className="flex h-full flex-col gap-3 border-l border-[#323232] bg-[#121212] py-3 shadow-2xl">
                       <div className="px-4 sm:px-5">
                         <div className="flex items-center justify-between gap-4">
-                          <div className="leading-6">T-{detailDataTask.id}</div>
-                          <Dialog.Title className="leading-6">
-                            {detailDataTask.name}
-                          </Dialog.Title>
+                          <div className="flex-shrink-0 leading-6">
+                            T-{detailDataTask.id}
+                          </div>
+                          <input
+                            id="name"
+                            name="name"
+                            type="text"
+                            autoComplete="off"
+                            placeholder="Name..."
+                            className="block w-full rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+                            defaultValue={detailDataTask.name}
+                            onKeyUp={(e) =>
+                              e.key === "Enter" &&
+                              handleUpdateTask({
+                                id: detailDataTask.id,
+                                name: e.target.value,
+                              })
+                            }
+                            onBlur={(e) =>
+                              handleUpdateTask({
+                                id: detailDataTask.id,
+                                name: e.target.value,
+                              })
+                            }
+                          />
                           <div className="ml-auto flex h-7 flex-row items-center gap-2">
                             <div>
                               <Global.Button
@@ -376,7 +394,7 @@ export default function SlideOverDetail() {
                                         assignees;
 
                                       const detailDataTaskAssignees =
-                                        assigneesSelected?.map(
+                                        detailDataTask?.assignees?.map(
                                           (assign) => assign.id
                                         );
 
@@ -387,10 +405,13 @@ export default function SlideOverDetail() {
                                         ...(ifUserAssigned
                                           ? {
                                               onClick: () =>
-                                                setAssigneesSelected([
-                                                  ...assigneesSelected,
-                                                  assignees,
-                                                ]),
+                                                handleUpdateTask({
+                                                  id: detailDataTask.id,
+                                                  assignees: [
+                                                    ...detailDataTask?.assignees,
+                                                    assignees,
+                                                  ],
+                                                }),
                                             }
                                           : {}),
                                         isDisabledLink: true,

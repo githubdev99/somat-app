@@ -75,10 +75,3 @@ export const downloadBlob = (content, filename, contentType) => {
   pom.setAttribute("download", filename);
   pom.click();
 };
-
-export const scrollToElement = (element) => {
-  if (!element) return;
-
-  var elementPosition = element.scrollHeight;
-  window.scrollTo(0, elementPosition);
-};

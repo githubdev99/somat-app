@@ -114,16 +114,6 @@ function SidebarWrapper(props) {
       ),
     },
     {
-      id: "draft",
-      url: isAuthPage ? "/app/auth" : "/app/draft",
-      content: (
-        <>
-          <GoPencil size={18} />
-          Drafts
-        </>
-      ),
-    },
-    {
       id: "assigned",
       url: isAuthPage ? "/app/auth" : "/app/assigned",
       content: (

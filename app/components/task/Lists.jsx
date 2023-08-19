@@ -1,16 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Global } from "~/components";
-import { BsThreeDots } from "react-icons/bs";
+import { BsChat, BsThreeDots } from "react-icons/bs";
 import { Fragment, useContext, useEffect } from "react";
 import { MdInbox, MdOutlineAddBox } from "react-icons/md";
-import { GoPencil } from "react-icons/go";
 import { CgAssign } from "react-icons/cg";
 import { RiUserAddLine } from "react-icons/ri";
 import { TbLayoutSidebarRightCollapse, TbTrash } from "react-icons/tb";
-import { IoTrashBin } from "react-icons/io5";
+import { IoNewspaperOutline, IoTrashBin } from "react-icons/io5";
 import { FaUserCircle } from "react-icons/fa";
 import { arrayToCsv, convertDateSqlFormat, downloadBlob } from "~/lib/utils";
-import { emptyTask } from "~/lib/api";
+import { emptyTask, updateTask } from "~/lib/api";
 
 export default function Lists(props) {
   const {
@@ -40,12 +39,6 @@ export default function Lists(props) {
         Inbox
       </>
     ),
-    draft: (
-      <>
-        <GoPencil size={18} />
-        Drafts
-      </>
-    ),
     assigned: (
       <>
         <CgAssign size={18} />
@@ -68,7 +61,7 @@ export default function Lists(props) {
 
   let isAuthPage = slug && String(slug).includes("auth");
   let isDefaultPage =
-    slug && ["inbox", "draft", "assigned", "created", "trash"].includes(slug);
+    slug && ["inbox", "assigned", "created", "trash"].includes(slug);
   let titlePage = isDefaultPage
     ? titleDefaultPages[slug]
     : dataListSelected?.name;
@@ -137,6 +130,27 @@ export default function Lists(props) {
       onSubmit: fetchEmptyTask,
       color: "danger",
     });
+  };
+
+  const handleUpdateTask = async (currentDataTask, payload) => {
+    if (
+      !payload?.id ||
+      (payload?.hasOwnProperty("task_status_id") &&
+        currentDataTask?.task_status?.id === payload?.task_status_id) ||
+      (payload?.hasOwnProperty("task_priority_id") &&
+        currentDataTask?.task_priority?.id === payload?.task_priority_id) ||
+      (payload?.hasOwnProperty("task_project_id") &&
+        currentDataTask?.task_project?.id === payload?.task_project_id)
+    )
+      return;
+
+    const response = await updateTask(payload, localStorage.getItem("token"));
+
+    const { code } = response?.status || {};
+
+    if (code !== 200) return;
+
+    await handleRefreshDataTask(localStorage.getItem("selectedWorkspaceId"));
   };
 
   let itemDropdownNav = [
@@ -284,31 +298,81 @@ export default function Lists(props) {
                                 {tasks?.length
                                   ? tasks.map((task, index) => {
                                       const {
-                                        id,
+                                        id: task_id,
                                         name,
                                         task_status,
                                         assignees,
                                         due_date,
                                         task_priority,
                                         task_project,
+                                        total_chat,
+                                        description,
                                       } = task;
 
                                       return (
                                         <Fragment key={index}>
                                           <tr>
                                             <td
-                                              className="relative min-h-[24px] w-[340px] cursor-pointer rounded-lg pb-2 pr-3 pt-2.5 text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141] hover:px-3"
+                                              className="relative min-h-[24px] w-[340px] cursor-pointer items-center justify-between rounded-lg pb-2 pr-3 pt-2.5 text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141] hover:px-3"
                                               onClick={() =>
-                                                window.slideOverDetail(id)
+                                                window.slideOverDetail(task_id)
                                               }
                                             >
-                                              <p className="w-[300px] truncate">
-                                                {name}
-                                              </p>
+                                              <div className="flex w-[300px] items-center gap-2">
+                                                <p className="truncate">
+                                                  {name}
+                                                </p>
+                                                <div className="ml-2 inline-flex items-center gap-2 text-[rgba(255,255,255,.4)]">
+                                                  {Number(total_chat) > 0 ? (
+                                                    <div className="flex items-center gap-1">
+                                                      <BsChat size={12} />
+                                                      <span className="text-xs">
+                                                        {total_chat}
+                                                      </span>
+                                                    </div>
+                                                  ) : null}
+                                                  {description ? (
+                                                    <IoNewspaperOutline
+                                                      size={14}
+                                                    />
+                                                  ) : null}
+                                                </div>
+                                              </div>
                                             </td>
                                             <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
                                               <Global.Dropdown
-                                                items={taskStatusDropdown}
+                                                items={taskStatusDropdown?.map(
+                                                  (taskStatus) => {
+                                                    const {
+                                                      id,
+                                                      onClick,
+                                                      isBottomLink,
+                                                      ...otherTaskStatus
+                                                    } = taskStatus;
+
+                                                    return {
+                                                      ...otherTaskStatus,
+                                                      ...(isBottomLink
+                                                        ? {
+                                                            isBottomLink,
+                                                          }
+                                                        : {
+                                                            onClick:
+                                                              isBottomLink
+                                                                ? () => {}
+                                                                : () =>
+                                                                    handleUpdateTask(
+                                                                      task,
+                                                                      {
+                                                                        id: task_id,
+                                                                        task_status_id:
+                                                                          id,
+                                                                      }
+                                                                    ),
+                                                          }),
+                                                    };
+                                                  }
+                                                )}
                                                 fullWidth={true}
                                                 forceOverlap={true}
                                                 className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
@@ -326,13 +390,37 @@ export default function Lists(props) {
                                                 items={dataAssignees.map(
                                                   (getAssign, index) => {
                                                     const {
+                                                      id,
                                                       first_name,
                                                       profile_image,
                                                     } = getAssign || {};
 
+                                                    const dataTaskAssignees =
+                                                      assignees?.map(
+                                                        (assign) => assign.id
+                                                      );
+
+                                                    const ifUserAssigned =
+                                                      !dataTaskAssignees.includes(
+                                                        id
+                                                      );
+
                                                     return {
-                                                      url: "#",
-                                                      onClick: () => {},
+                                                      ...(ifUserAssigned
+                                                        ? {
+                                                            onClick: () =>
+                                                              handleUpdateTask(
+                                                                task,
+                                                                {
+                                                                  id: task_id,
+                                                                  assignees: [
+                                                                    ...assignees,
+                                                                    getAssign,
+                                                                  ],
+                                                                }
+                                                              ),
+                                                          }
+                                                        : {}),
                                                       content: (
                                                         <div
                                                           className="flex items-center"
@@ -390,13 +478,50 @@ export default function Lists(props) {
                                             </td>
                                             <td className="relative cursor-pointer whitespace-nowrap rounded-lg text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141]">
                                               <Global.Datepicker
+                                                onChange={(value) =>
+                                                  handleUpdateTask(task, {
+                                                    id: task_id,
+                                                    due_date: new Date(value),
+                                                  })
+                                                }
                                                 inputClassName="!px-3 !py-2"
                                                 defaultValue={due_date}
                                               />
                                             </td>
                                             <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
                                               <Global.Dropdown
-                                                items={taskPriorityDropdown}
+                                                items={taskPriorityDropdown?.map(
+                                                  (taskPriority) => {
+                                                    const {
+                                                      id,
+                                                      onClick,
+                                                      isBottomLink,
+                                                      ...otherTaskPriority
+                                                    } = taskPriority;
+
+                                                    return {
+                                                      ...otherTaskPriority,
+                                                      ...(isBottomLink
+                                                        ? {
+                                                            isBottomLink,
+                                                          }
+                                                        : {
+                                                            onClick:
+                                                              isBottomLink
+                                                                ? () => {}
+                                                                : () =>
+                                                                    handleUpdateTask(
+                                                                      task,
+                                                                      {
+                                                                        id: task_id,
+                                                                        task_priority_id:
+                                                                          id,
+                                                                      }
+                                                                    ),
+                                                          }),
+                                                    };
+                                                  }
+                                                )}
                                                 fullWidth={true}
                                                 forceOverlap={true}
                                                 className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
@@ -420,7 +545,38 @@ export default function Lists(props) {
                                             </td>
                                             <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">
                                               <Global.Dropdown
-                                                items={taskProjectDropdown}
+                                                items={taskProjectDropdown?.map(
+                                                  (taskProject) => {
+                                                    const {
+                                                      id,
+                                                      onClick,
+                                                      isBottomLink,
+                                                      ...otherTaskProject
+                                                    } = taskProject;
+
+                                                    return {
+                                                      ...otherTaskProject,
+                                                      ...(isBottomLink
+                                                        ? {
+                                                            isBottomLink,
+                                                          }
+                                                        : {
+                                                            onClick:
+                                                              isBottomLink
+                                                                ? () => {}
+                                                                : () =>
+                                                                    handleUpdateTask(
+                                                                      task,
+                                                                      {
+                                                                        id: task_id,
+                                                                        task_project_id:
+                                                                          id,
+                                                                      }
+                                                                    ),
+                                                          }),
+                                                    };
+                                                  }
+                                                )}
                                                 fullWidth={true}
                                                 forceOverlap={true}
                                                 className="rounded-lg px-3 py-2 transition-all duration-100 ease-in hover:bg-[#414141]"
@@ -444,9 +600,7 @@ export default function Lists(props) {
                                             </td>
                                           </tr>
                                           {index + 1 === tasks.length &&
-                                          !["draft", "trash"].includes(
-                                            clickedNavId
-                                          ) ? (
+                                          !["trash"].includes(clickedNavId) ? (
                                             <tr className="h-20">
                                               <td
                                                 colSpan={6}
