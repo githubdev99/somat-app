@@ -102,6 +102,7 @@ export default function General() {
                 className="block w-full max-w-[400px] rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
                 onChange={(e) => setName(e.target.value)}
                 required
+                disabled={!is_owner}
               />
             </Form.Control>
             <Form.Message match="valueMissing" className="text-red-400">
@@ -140,7 +141,7 @@ export default function General() {
                   />
                 </label>
               )}
-              {profileImage && (
+              {profileImage && is_owner ? (
                 <Global.Button
                   type="button"
                   color="outlined-secondary"
@@ -149,7 +150,7 @@ export default function General() {
                 >
                   Remove
                 </Global.Button>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

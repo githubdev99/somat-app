@@ -334,16 +334,28 @@ export default function Attributes(props) {
                           </div>
                         )}
                         {states ? (
-                          <Global.Dropdown
-                            items={listStateDropdown}
-                            fullWidth={true}
-                            forceOverlap={true}
-                            className="block w-full rounded-md border-0 bg-transparent px-2 py-1 shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
-                          >
-                            <div className="flex items-center gap-2 rounded-md bg-[rgba(18,18,18,1)] px-2 py-0.5">
-                              {iconState} {String(states).replaceAll("_", " ")}
-                            </div>
-                          </Global.Dropdown>
+                          <>
+                            {is_owner ? (
+                              <Global.Dropdown
+                                items={listStateDropdown}
+                                fullWidth={true}
+                                forceOverlap={true}
+                                className="block w-full rounded-md border-0 bg-transparent px-2 py-1 shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+                              >
+                                <div className="flex items-center gap-2 rounded-md bg-[rgba(18,18,18,1)] px-2 py-0.5">
+                                  {iconState}{" "}
+                                  {String(states).replaceAll("_", " ")}
+                                </div>
+                              </Global.Dropdown>
+                            ) : (
+                              <div className="block w-full rounded-md border-0 bg-transparent px-2 py-1 shadow-sm ring-1 ring-inset ring-[#414141] transition-all duration-200 ease-in placeholder:text-gray-400 focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6">
+                                <div className="flex items-center gap-2 rounded-md bg-[rgba(18,18,18,1)] px-2 py-0.5">
+                                  {iconState}{" "}
+                                  {String(states).replaceAll("_", " ")}
+                                </div>
+                              </div>
+                            )}
+                          </>
                         ) : null}
                       </td>
                     </tr>
