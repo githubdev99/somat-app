@@ -215,34 +215,31 @@ export default function Lists(props) {
             )}
           </div>
           <div className="flex flex-row items-center gap-2">
-            {slug === "trash" && is_owner ? (
-              <div>
-                {rowCsvTasks?.length > 1 ? (
-                  <Global.Button
-                    type="button"
-                    color="danger"
-                    size="sm"
-                    onClick={handleEmptyTask}
-                  >
-                    <IoTrashBin /> Empty Trash
-                  </Global.Button>
-                ) : null}
-              </div>
-            ) : (
+            {slug === "trash" ? (
               <>
-                <div>
-                  <Global.Button type="button" color="transparent" size="sm">
-                    Filters
-                  </Global.Button>
-                </div>
-                <div>
-                  <Global.Dropdown items={itemDropdownNav}>
-                    <Global.Button type="button" color="transparent" size="sm">
-                      <BsThreeDots />
-                    </Global.Button>
-                  </Global.Dropdown>
-                </div>
+                {is_owner ? (
+                  <div>
+                    {rowCsvTasks?.length > 1 ? (
+                      <Global.Button
+                        type="button"
+                        color="danger"
+                        size="sm"
+                        onClick={handleEmptyTask}
+                      >
+                        <IoTrashBin /> Empty Trash
+                      </Global.Button>
+                    ) : null}
+                  </div>
+                ) : null}
               </>
+            ) : (
+              <div>
+                <Global.Dropdown items={itemDropdownNav}>
+                  <Global.Button type="button" color="transparent" size="sm">
+                    <BsThreeDots />
+                  </Global.Button>
+                </Global.Dropdown>
+              </div>
             )}
           </div>
         </div>

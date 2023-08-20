@@ -40,14 +40,20 @@ export default function Users() {
     const { code, message } = response?.status || {};
 
     window.showToastNotification({
-      type: code === 200 ? "success" : "failed",
-      title: code === 200 ? "Success!" : "Failed!",
-      message: message,
+      type: code === 200 && response?.data === true ? "success" : "failed",
+      title: code === 200 && response?.data === true ? "Success!" : "Failed!",
+      message:
+        response?.data === true
+          ? message
+          : "Failed send invitation link, please try again later",
     });
 
     if (code === 200) {
-      setOpenModal(false);
-      setEmail("");
+      if (response?.data === true) {
+        setOpenModal(false);
+        setEmail("");
+      }
+
       setIsLoadingSubmit(false);
 
       await handleDataInvited();

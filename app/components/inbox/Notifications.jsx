@@ -38,32 +38,7 @@ export default function Notifications() {
 
   return (
     <>
-      <div className="sticky top-0 z-40 flex h-12 shrink-0 items-center gap-x-4 border-none px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-6">
-        <div className="flex w-full flex-row items-center justify-between gap-2 rounded-lg transition-all duration-200 ease-in">
-          <div className="px-2">
-            <span className="isolate inline-flex rounded-md shadow-sm">
-              <Global.Button
-                type="button"
-                color="outlined-secondary"
-                size="sm"
-                className="!rounded-r-none !border-r-0"
-              >
-                Inbox
-              </Global.Button>
-              <Global.Button
-                type="button"
-                color="outlined-secondary"
-                size="sm"
-                className="-ml-px !rounded-l-none !border-l-0"
-              >
-                Unread
-              </Global.Button>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <main className="h-full max-w-full overflow-x-auto pb-5">
+      <main className="h-full max-w-full overflow-x-auto py-5">
         <div className="px-4 sm:px-6 lg:px-8">
           {dataInbox?.length
             ? dataInbox.map((item, index) => {

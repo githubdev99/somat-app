@@ -269,24 +269,6 @@ export default function SlideOverDetail() {
                           />
                           <div className="ml-auto flex h-7 flex-row items-center gap-2">
                             <div>
-                              <Global.Button
-                                type="button"
-                                color="outlined-secondary"
-                                size="sm"
-                              >
-                                Share
-                              </Global.Button>
-                            </div>
-                            <div>
-                              <Global.Button
-                                type="button"
-                                color="transparent"
-                                size="sm"
-                              >
-                                <FaRegBellSlash /> Subscribe
-                              </Global.Button>
-                            </div>
-                            <div>
                               <Global.Dropdown items={optionTask}>
                                 <Global.Button
                                   type="button"
