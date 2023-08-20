@@ -8,7 +8,6 @@ import { HiOutlineArrowLeft } from "react-icons/hi";
 import { RxActivityLog, RxCross2 } from "react-icons/rx";
 import { Dialog, Transition } from "@headlessui/react";
 import { AiOutlinePlus } from "react-icons/ai";
-import { GoPencil } from "react-icons/go";
 import { IoTrashBin } from "react-icons/io5";
 import { FaUserCircle } from "react-icons/fa";
 import { register, login, addWorkspace } from "~/lib/api";
