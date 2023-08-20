@@ -15,8 +15,8 @@ import {
   useNavigate,
 } from "@remix-run/react";
 
-import tailwindStylesheetUrl from "~/styles/tailwind.css";
-import customStylesheetUrl from "~/styles/custom.css";
+import tailwindStylesheetUrl from "./styles/tailwind.css";
+import customStylesheetUrl from "./styles/custom.css";
 import { Global } from "~/components";
 import {
   getAllAttribute,
