@@ -1078,17 +1078,10 @@ const ModalAddTask = () => {
         <div className="relative px-4 sm:px-5">
           <CardDetailComponent>
             <div className="px-3">
-              <textarea
-                id="description"
-                name="description"
-                type="text"
-                autoComplete="off"
-                placeholder="Description..."
+              <Global.TextAreaEditor
                 className="block w-full rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
-                rows="8"
-                style={{ resize: "none" }}
-                onChange={(e) => setDescription(e.target.value)}
-              ></textarea>
+                onChange={(value) => setDescription(value)}
+              />
             </div>
           </CardDetailComponent>
         </div>

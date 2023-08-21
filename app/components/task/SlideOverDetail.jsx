@@ -646,6 +646,7 @@ export default function SlideOverDetail() {
                       <div className="relative flex-1 px-4 sm:px-5">
                         <CardDetailComponent
                           className="h-full"
+                          handleUpdateTask={handleUpdateTask}
                           detailDataTask={detailDataTask}
                           detailDataTaskHistory={detailDataTaskHistory}
                           handleDetailDataTaskHistory={
@@ -682,6 +683,7 @@ const CardDetailComponent = ({ children, className = "", ...otherProps }) => {
 };
 
 const TabComponent = ({
+  handleUpdateTask,
   detailDataTask,
   detailDataTaskHistory,
   handleDetailDataTaskHistory,
@@ -715,7 +717,11 @@ const TabComponent = ({
       href: "#",
       icon: IoNewspaperOutline,
       component: (
-        <DescriptionComponent description={detailDataTask.description || ""} />
+        <DescriptionComponent
+          detailDataTask={detailDataTask}
+          handleUpdateTask={handleUpdateTask}
+          description={detailDataTask.description || ""}
+        />
       ),
     },
   ];
@@ -940,10 +946,27 @@ const ChatComponent = ({
   );
 };
 
-const DescriptionComponent = ({ description }) => {
+const DescriptionComponent = ({
+  detailDataTask,
+  handleUpdateTask,
+  description = null,
+}) => {
+  const [currentDescription, setCurrentDescription] = useState(description);
+
   return (
     <div className="c-description-component px-5 py-2 text-[15px] text-[#FFFFFFE6]">
-      <div dangerouslySetInnerHTML={{ __html: description }}></div>
+      <Global.TextAreaEditor
+        className="block w-full rounded-md border-0 bg-transparent px-2 py-1 text-[rgba(255,255,255,.9)] shadow-sm transition-all duration-200 ease-in placeholder:text-gray-400 hover:bg-[#414141] focus:outline-none focus-visible:bg-transparent sm:text-sm sm:leading-6"
+        onChange={(value) => setCurrentDescription(value)}
+        onSave={() =>
+          handleUpdateTask({
+            id: detailDataTask.id,
+            description: currentDescription,
+          })
+        }
+        source={description}
+        preview="preview"
+      />
     </div>
   );
 };

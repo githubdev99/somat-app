@@ -53,3 +53,26 @@
   color: #2d8cff;
   text-decoration: underline;
 }
+
+/* Markdown Editor */
+.w-md-editor {
+  background-color: transparent !important;
+  box-shadow: unset !important;
+}
+
+.w-md-editor-preview {
+  padding-left: 0 !important;
+}
+
+.w-md-editor-toolbar,
+.wmde-markdown {
+  background-color: transparent !important;
+}
+
+.w-md-editor-toolbar {
+  padding-left: 0 !important;
+}
+
+.w-md-editor-toolbar * {
+  color: rgba(255, 255, 255, 0.9) !important;
+}

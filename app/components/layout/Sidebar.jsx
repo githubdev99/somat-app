@@ -4,8 +4,6 @@ import { TbLayoutSidebarLeftCollapse, TbTrash } from "react-icons/tb";
 import { HiCog } from "react-icons/hi";
 import { MdInbox, MdOutlineAddBox, MdEdit } from "react-icons/md";
 import { AiOutlinePlus, AiOutlineQuestionCircle } from "react-icons/ai";
-import { GoPencil } from "react-icons/go";
-import { BiLockAlt } from "react-icons/bi";
 import { CgAssign } from "react-icons/cg";
 import { RiUserAddLine } from "react-icons/ri";
 import { RxActivityLog } from "react-icons/rx";
@@ -77,8 +75,11 @@ function SidebarWrapper(props) {
     setClickedNavId,
   } = useContext(Global.RootContext);
 
-  const { id: workspaceSelectedId, name: workspaceSelectedName } =
-    dataWorkspaceSelected || {};
+  const {
+    id: workspaceSelectedId,
+    name: workspaceSelectedName,
+    profile_image: workspaceSelectedProfileImage,
+  } = dataWorkspaceSelected || {};
 
   const { data, setSidebarOpen } = props;
   const { params } = data || {};
@@ -156,7 +157,19 @@ function SidebarWrapper(props) {
             <Global.Popover
               trigger={
                 <div className="group flex w-full cursor-pointer flex-row items-center rounded-lg transition duration-200 ease-in hover:bg-[#232323]">
-                  <div className="flex-1 px-3 py-1">
+                  <div className="flex flex-1 items-center gap-2 px-3 py-1">
+                    {workspaceSelectedProfileImage ? (
+                      <img
+                        className="h-[16px] w-[16px]"
+                        src={workspaceSelectedProfileImage}
+                        alt=""
+                      />
+                    ) : (
+                      <BsPersonWorkspace
+                        className="h-[16px] w-[16px]"
+                        aria-hidden="true"
+                      />
+                    )}
                     {isAuthPage ? "My Workspace" : workspaceSelectedName}
                   </div>
                   <div className="border-1 px-2 py-1 group-hover:border-l-[1px] group-hover:border-[#393939] lg:hidden lg:border-0">

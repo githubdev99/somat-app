@@ -24,6 +24,7 @@ export default function Lists(props) {
     clickedNavId,
     handleRefreshDataTask,
     dataWorkspaceSelected,
+    totalTask,
   } = useContext(Global.RootContext);
 
   const { is_owner } = dataWorkspaceSelected || {};
@@ -662,7 +663,9 @@ export default function Lists(props) {
 
           <div className="flex h-12 shrink-0 items-center gap-x-4 border-t border-[rgba(255,255,255,.1)] px-4 sm:gap-x-6 sm:px-6 lg:px-6">
             <div className="flex w-full flex-row items-center justify-between gap-2 rounded-lg transition-all duration-200 ease-in">
-              <div className="px-2">21 Tasks</div>
+              <div className="px-2">
+                {totalTask} {totalTask > 1 ? "Tasks" : "Task"}
+              </div>
             </div>
           </div>
         </>

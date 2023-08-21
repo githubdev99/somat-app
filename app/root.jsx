@@ -72,6 +72,7 @@ export default function App() {
   const [taskStatusSelected, setTaskStatusSelected] = useState({});
   const [taskPrioritySelected, setTaskPrioritySelected] = useState({});
   const [taskProjectSelected, setTaskProjectSelected] = useState({});
+  const [totalTask, setTotalTask] = useState(0);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -179,7 +180,7 @@ export default function App() {
     if (response?.status?.code !== 200) return;
 
     setDataTask(response?.data);
-
+    setTotalTask(response?.total);
     setIsLoadingDataTask(false);
   };
 
@@ -440,6 +441,7 @@ export default function App() {
             taskStatusSelected,
             taskPrioritySelected,
             taskProjectSelected,
+            totalTask,
             setToken,
             setSelectedWorkspaceId,
             handleDataProfile,

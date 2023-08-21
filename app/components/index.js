@@ -9,6 +9,7 @@ import ToastNotification from "./global/ToastNotification";
 import AlertConfirmation from "./global/AlertConfirmation";
 import ColorPicker from "./global/ColorPicker";
 import Popover from "./global/Popover";
+import TextAreaEditor from "./global/TextAreaEditor";
 
 import Sidebar from "./layout/Sidebar";
 import Container from "./layout/Container";
@@ -39,6 +40,7 @@ export const Global = {
   ColorPicker,
   Popover,
   RootContext,
+  TextAreaEditor,
 };
 
 export const Layout = {
