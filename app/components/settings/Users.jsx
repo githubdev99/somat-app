@@ -43,18 +43,18 @@ export default function Users() {
       type: code === 200 && response?.data === true ? "success" : "failed",
       title: code === 200 && response?.data === true ? "Success!" : "Failed!",
       message:
-        response?.data === true
-          ? message
-          : "Failed send invitation link, please try again later",
+        response?.hasOwnProperty("data") && response?.data === false
+          ? "Failed send invitation link, please try again later"
+          : message,
     });
+
+    setIsLoadingSubmit(false);
 
     if (code === 200) {
       if (response?.data === true) {
         setOpenModal(false);
         setEmail("");
       }
-
-      setIsLoadingSubmit(false);
 
       await handleDataInvited();
     }
