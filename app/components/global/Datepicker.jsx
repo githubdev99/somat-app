@@ -42,9 +42,7 @@ export default function Datepicker({
     },
     datepickerClassNames: datepickerClassName,
     language: "en",
-    ...(defaultValue && {
-      defaultDate: new Date(defaultValue),
-    }),
+    defaultDate: defaultValue ? new Date(defaultValue) : false,
   };
 
   useEffect(() => {

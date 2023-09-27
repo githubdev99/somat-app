@@ -742,6 +742,7 @@ const ModalAddTask = () => {
   // Payload States
   const [name, setName] = useState("");
   const [description, setDescription] = useState(null);
+  const [startDate, setStartDate] = useState(null);
   const [dueDate, setDueDate] = useState(null);
   const [listSelected, setListSelected] = useState({});
   const [assigneesSelected, setAssigneesSelected] = useState([]);
@@ -773,6 +774,7 @@ const ModalAddTask = () => {
       {
         name,
         description,
+        start_date: startDate,
         due_date: dueDate,
         list_id: listSelected.id,
         task_status_id: taskStatusSelected.id,
@@ -800,6 +802,7 @@ const ModalAddTask = () => {
     if (code === 200) {
       setName("");
       setDescription(null);
+      setStartDate(null);
       setDueDate(null);
       setListSelected({});
       setAssigneesSelected([]);
@@ -902,14 +905,14 @@ const ModalAddTask = () => {
                       ) : null}
                     </div>
                   </td>
-                  <td className="h-[31px] w-[120px] pl-2">Created At</td>
+                  <td className="h-[31px] w-[120px] pl-2">Start Date</td>
                   <td className="text-[#EAEAEA]">
-                    <div
-                      className="relative mx-1 block w-full rounded-lg px-3 py-0.5 text-left transition duration-100 ease-in"
-                      data-headlessui-state
-                    >
-                      <div className="h-full min-h-[25px] w-full text-left">
-                        {convertDate(new Date())}
+                    <div className="min-h-[25px] w-full rounded-lg text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141]">
+                      <div className="px-1">
+                        <Global.Datepicker
+                          onChange={(value) => setStartDate(value)}
+                          inputClassName="!px-3 !py-0.5"
+                        />
                       </div>
                     </div>
                   </td>

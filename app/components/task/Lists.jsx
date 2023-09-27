@@ -73,6 +73,7 @@ export default function Lists(props) {
       "Task",
       "Status",
       "Assignees",
+      "Start Date",
       "Due Date",
       "Priority",
       "Project",
@@ -88,6 +89,7 @@ export default function Lists(props) {
         name,
         task_status,
         assignees,
+        start_date,
         due_date,
         task_priority,
         task_project,
@@ -99,6 +101,7 @@ export default function Lists(props) {
         name,
         task_status.name,
         assignees.map(({ first_name }) => first_name).join(", "),
+        convertDateSqlFormat(start_date),
         convertDateSqlFormat(due_date),
         task_priority?.name || "",
         task_project?.name || "",
@@ -270,6 +273,9 @@ export default function Lists(props) {
                               Assignees
                             </th>
                             <th scope="col" className="px-3 py-2 font-normal">
+                              Start Date
+                            </th>
+                            <th scope="col" className="px-3 py-2 font-normal">
                               Due Date
                             </th>
                             <th scope="col" className="px-3 py-2 font-normal">
@@ -300,6 +306,7 @@ export default function Lists(props) {
                                         name,
                                         task_status,
                                         assignees,
+                                        start_date,
                                         due_date,
                                         task_priority,
                                         task_project,
@@ -479,11 +486,27 @@ export default function Lists(props) {
                                                 onChange={(value) =>
                                                   handleUpdateTask(task, {
                                                     id: task_id,
+                                                    start_date: new Date(value),
+                                                  })
+                                                }
+                                                inputClassName="!px-3 !py-2"
+                                                {...(start_date && {
+                                                  defaultValue: start_date,
+                                                })}
+                                              />
+                                            </td>
+                                            <td className="relative cursor-pointer whitespace-nowrap rounded-lg text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141]">
+                                              <Global.Datepicker
+                                                onChange={(value) =>
+                                                  handleUpdateTask(task, {
+                                                    id: task_id,
                                                     due_date: new Date(value),
                                                   })
                                                 }
                                                 inputClassName="!px-3 !py-2"
-                                                defaultValue={due_date}
+                                                {...(due_date && {
+                                                  defaultValue: due_date,
+                                                })}
                                               />
                                             </td>
                                             <td className="relative cursor-pointer whitespace-nowrap text-sm text-gray-300">

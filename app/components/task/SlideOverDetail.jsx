@@ -353,15 +353,26 @@ export default function SlideOverDetail() {
                                   </Global.Dropdown>
                                 </td>
                                 <td className="h-[31px] w-[120px] pl-2">
-                                  Created At
+                                  Start Date
                                 </td>
                                 <td className="text-[#EAEAEA]">
-                                  <div className="min-h-[25px] w-full px-3 py-0.5">
-                                    <span className="px-1">
-                                      {convertDate(
-                                        new Date(detailDataTask.created_at)
-                                      )}
-                                    </span>
+                                  <div className="min-h-[25px] w-full rounded-lg text-sm text-gray-300 transition-all duration-100 ease-in hover:bg-[#414141]">
+                                    <div className="px-1">
+                                      <Global.Datepicker
+                                        onChange={(value) =>
+                                          handleUpdateTask({
+                                            id: detailDataTask.id,
+                                            start_date: new Date(value),
+                                          })
+                                        }
+                                        inputClassName="!px-3 !py-2"
+                                        datepickerClassName="top-8 right-10"
+                                        {...(detailDataTask?.start_date && {
+                                          defaultValue:
+                                            detailDataTask.start_date,
+                                        })}
+                                      />
+                                    </div>
                                   </div>
                                 </td>
                               </tr>
@@ -462,8 +473,10 @@ export default function SlideOverDetail() {
                                           })
                                         }
                                         inputClassName="!px-3 !py-2"
-                                        defaultValue={detailDataTask.due_date}
                                         datepickerClassName="top-8 right-10"
+                                        {...(detailDataTask?.due_date && {
+                                          defaultValue: detailDataTask.due_date,
+                                        })}
                                       />
                                     </div>
                                   </div>
